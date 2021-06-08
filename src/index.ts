@@ -10,6 +10,8 @@ dotenv.config();
 // Routers
 import authRouter from './routes/auth';
 
+import { initialisePassport } from './config/passport';
+
 const port = process.env.PORT;
 
 // Helmet Middleware
@@ -27,9 +29,15 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET as string,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    }
   })
 );
+
+// Initialise Passport
+initialisePassport(app);
 
 // Authentication Routes
 app.use('/auth', authRouter);

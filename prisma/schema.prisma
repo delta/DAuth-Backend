@@ -14,6 +14,9 @@ model ResourceOwner {
   id             Int              @id @default(autoincrement())
   name           String
   email          String           @unique
+  phoneNumber    String           @unique
+  department     String
+  year           Int
   password       String
   isActivated    Boolean          @default(false)
   createdAt      DateTime         @default(now())
