@@ -9,17 +9,10 @@ import {
   validatePhoneNumber
 } from '../utils/utils';
 import passport from 'passport';
-import { ResourceOwner } from '.prisma/client';
+import { Prisma, ResourceOwner } from '.prisma/client';
 
 export const validateRegisterFields = [
   check('name').exists().trim().not().isEmpty().withMessage('Name is required'),
-  check('email')
-    .exists()
-    .normalizeEmail()
-    .not()
-    .isEmpty()
-    .isEmail()
-    .withMessage('Invalid email address'),
   check('phoneNumber')
     .exists()
     .trim()
@@ -61,6 +54,144 @@ export const validateLoginFields = [
   check('password').exists().trim().withMessage('Password is required')
 ];
 
+export const validateStartFields = [
+  check('email')
+    .exists()
+    .normalizeEmail()
+    .not()
+    .isEmpty()
+    .isEmail()
+    .withMessage('Invalid email address')
+];
+
+export const start = async (req: Request, res: Response): Promise<unknown> => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const email: string = req.body.email;
+  const verifiedEmail = (req as any).session.verifiedEmail;
+
+  if (verifiedEmail)
+    return res.status(200).json({
+      message: 'Session Already started, Continue with your Registration'
+    });
+
+  try {
+    const user = await prisma.email.findUnique({
+      where: {
+        email: email
+      },
+      select: {
+        id: true,
+        isActivated: true,
+        ResourceOwner: {
+          select: {
+            id: true
+          }
+        }
+      }
+    });
+    // check if user is already registered with that email
+    if (user?.ResourceOwner?.id) {
+      return res.status(409).json({ message: 'User already exists' });
+    }
+
+    // 128 characters (url-safe)
+    const activationCode = generateActivationCode();
+    const expireAt = expireDate(
+      process.env.MAIL_VERIFICATION_EXPIRY_TIME as string
+    );
+    // update activation code or create if not present
+    // TODO
+    // check for activation code expiry
+    await prisma.email.upsert({
+      where: {
+        email: email
+      },
+      update: {
+        activationCode: activationCode,
+        expireAt: expireAt
+      },
+      create: {
+        email: email,
+        activationCode: activationCode,
+        expireAt: expireAt
+      }
+    });
+
+    // TODO
+    // mail verification link
+    console.log(
+      `[verificationLink]: `,
+      `http://loaclhost:3001/auth/email/verify/${activationCode}`
+    );
+    return res
+      .status(200)
+      .json({ message: 'Verification link sent successfully' });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const verfiyEmail = async (
+  req: Request,
+  res: Response
+): Promise<unknown> => {
+  const activationCode = req.params.id;
+  if (!activationCode) {
+    return res.status(400).json({ message: 'Invalid Verification Link' });
+  }
+  try {
+    const email = await prisma.email.findUnique({
+      where: {
+        activationCode: activationCode
+      }
+    });
+
+    if (!email) {
+      return res.status(404).json({ message: 'Email not found' });
+    }
+
+    if (
+      email.isActivated &&
+      (req as any).session.verifiedEmail.email === email.email
+    ) {
+      return res.status(200).json({ message: 'Email Already Verified' });
+      // TODO
+      // redirect to register page
+    }
+
+    if (email.activationCode !== activationCode) {
+      return res.status(400).json({ message: 'Invalid Verification Link' });
+    }
+
+    if (new Date() > email.expireAt) {
+      return res.status(498).json({ message: 'Verification Link Expired' });
+    }
+
+    await prisma.email.update({
+      where: {
+        email: email.email
+      },
+      data: {
+        isActivated: true
+      }
+    });
+    const verifiedEmail = { email: email.email, emailId: email.id };
+    //create registration session
+    req.session.cookie.maxAge = 10 * 60 * 1000; // 10 minutes
+    (req as any).session.verifiedEmail = verifiedEmail;
+    return res.status(200).json({ message: 'Email verified Successfully' });
+    // TODO
+    // redirect to register page
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 export const register = async (
   req: Request,
   res: Response
@@ -69,57 +200,36 @@ export const register = async (
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-
-  const { name, email, password, phoneNumber, year, department } = req.body;
-  try {
-    const resourceOwner = await prisma.resourceOwner.findFirst({
-      where: {
-        OR: [
-          {
-            email: email
-          },
-          {
-            phoneNumber: phoneNumber
-          }
-        ]
-      }
-    });
-    // check if user is already registered
-    if (resourceOwner !== null) {
-      return res.status(409).json({ message: 'User already exists' });
+  const verifiedEmail = (req as any).session.verifiedEmail;
+  if (!verifiedEmail) {
+    return res
+      .status(408)
+      .json({ message: 'Registration session expired, try again' });
+  }
+  const { emailId } = verifiedEmail;
+  // deleting registration session
+  req.session.destroy((err) => {
+    if (err) {
+      throw new Error(err);
     }
+  });
 
+  const { name, password, phoneNumber, year, department } = req.body;
+  try {
     // generate salt to hash password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
-
-    const expireAt = expireDate(
-      process.env.MAIL_VERIFICATION_EXPIRY_TIME as string
-    ).toISOString();
-    // 128 characters (url-safe)
-    const activationCode = generateActivationCode();
-
     // create user with activation code
     await prisma.resourceOwner.create({
       data: {
-        email: email,
+        emailId: emailId,
         name: name,
         password: hashPassword,
         phoneNumber: phoneNumber,
         year: year,
-        department: department,
-        ActivationCode: {
-          create: {
-            activationCode: activationCode,
-            expireAt: expireAt
-          }
-        }
+        department: department
       }
     });
-    // TODO
-    // mail verfication link
-    console.log(`[ActivationCode]: `, activationCode);
-
     return res.status(200).json({ message: 'Registration successful' });
   } catch (error) {
     console.log(error);
@@ -144,11 +254,6 @@ export const login = (req: Request, res: Response): Response => {
       if (err) {
         return res.status(500).json({ message: 'Internal server error' });
       }
-      if (!user.isActivated) {
-        return res
-          .status(401)
-          .json({ message: 'Pending account, Please verfiy your email' });
-      }
       return res.status(200).json({ message: 'Login successful', user: user });
     });
   })(req, res);
@@ -170,20 +275,6 @@ export const logout = (req: Request, res: Response) => {
     }
     return res.status(200).json({ message: 'Successfully Logged Out' });
   });
-};
-
-export const isActivated = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Response | undefined => {
-  const user = req.user;
-  if (!(user as any).isActivated)
-    return res
-      .status(401)
-      .json({ message: 'Pending account, Please verfiy your email' });
-
-  next();
 };
 
 export const isLoggedIn = (

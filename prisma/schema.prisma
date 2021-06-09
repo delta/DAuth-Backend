@@ -10,30 +10,31 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model Email {
+  id             Int            @id @default(autoincrement())
+  activationCode String         @unique
+  email          String         @unique
+  isActivated    Boolean        @default(false)
+  expireAt       DateTime
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  ResourceOwner  ResourceOwner?
+}
+
 model ResourceOwner {
   id             Int              @id @default(autoincrement())
+  email          Email?           @relation(fields: [emailId], references: [id])
+  emailId        Int
   name           String
-  email          String           @unique
-  phoneNumber    String           @unique
+  phoneNumber    String
   department     String
   year           Int
   password       String
-  isActivated    Boolean          @default(false)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   Client         Client[]
   Code           Code[]
   authorizedApps authorisedApps[]
-  ActivationCode ActivationCode?
-}
-
-model ActivationCode {
-  activationCode String        @unique
-  user           ResourceOwner @relation(fields: [userId], references: [id])
-  userId         Int
-  createdAt      DateTime      @default(now())
-  expireAt       DateTime
-  updatedAt      DateTime      @updatedAt
 }
 
 model Client {

@@ -7,12 +7,17 @@ import { Application } from 'express';
 
 const LocalStrategy = passportLocal.Strategy;
 
-const getUserByEmail = async (email: string): Promise<ResourceOwner | null> => {
-  return await prisma.resourceOwner.findUnique({
+const getUserByEmail = async (email: string) => {
+  const user = await prisma.email.findUnique({
     where: {
       email: email
+    },
+    select: {
+      ResourceOwner: true
     }
   });
+
+  return user?.ResourceOwner;
 };
 
 const getUserById = async (id: number): Promise<ResourceOwner | null> => {
