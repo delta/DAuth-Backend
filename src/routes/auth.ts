@@ -25,15 +25,17 @@ registration flow :
 
 // route to check if user is already logged in
 router.get('/is-auth', isAuthenticated, isAuth);
-// register session start route
-router.post('/start', isNotAuthenticated, validateStartFields, start);
-// verify email route
-router.get('/email/verify/:id', isAuthenticated, verfiyEmail);
-// register route
-router.post('/register', isNotAuthenticated, validateRegisterFields, register);
-// login route
-router.post('/login', isNotAuthenticated, validateLoginFields, login);
 // logout route
 router.post('/logout', isAuthenticated, logout);
+
+router.use(isNotAuthenticated);
+// register session start route
+router.post('/start', validateStartFields, start);
+// verify email route
+router.get('/email/verify/:id', verfiyEmail);
+// register route
+router.post('/register', validateRegisterFields, register);
+// login route
+router.post('/login', validateLoginFields, login);
 
 export default router;
