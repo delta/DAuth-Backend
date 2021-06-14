@@ -3,7 +3,8 @@ import { session } from 'passport';
 const router: Router = express.Router();
 import {
   isAuth,
-  isLoggedIn,
+  isAuthenticated,
+  isNotAuthenticated,
   login,
   logout,
   register,
@@ -23,7 +24,11 @@ registration flow :
  */
 
 // route to check if user is already logged in
-router.get('/is-auth', isLoggedIn, isAuth);
+router.get('/is-auth', isAuthenticated, isAuth);
+// logout route
+router.post('/logout', isAuthenticated, logout);
+
+router.use(isNotAuthenticated);
 // register session start route
 router.post('/start', validateStartFields, start);
 // verify email route
@@ -32,7 +37,5 @@ router.get('/email/verify/:id', verfiyEmail);
 router.post('/register', validateRegisterFields, register);
 // login route
 router.post('/login', validateLoginFields, login);
-// logout route
-router.post('/logout', isLoggedIn, logout);
 
 export default router;
