@@ -215,7 +215,7 @@ export const register = async (
     // generate salt to hash password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
-    // create user with activation code
+    // create user
     await prisma.resourceOwner.create({
       data: {
         emailId: emailId,
