@@ -10,8 +10,17 @@ import oauth from '../oauth/index';
 
 const router: Router = express.Router();
 
+// client_id     |
+// redirect_uri  |
+// response_type |
+// grant_type    | -> query params
+// state         |
+// scope         |
+// nonce         |
 router.get('/authorize', checkAuthenticated, validateClient);
 
+// authorize route
+// 'false' === req.query.allowed, for user who denied access to application
 router.post(
   '/authorize',
   isAuthenticated,
@@ -27,7 +36,7 @@ router.post(
 
 router.post('/token', oauth.token(), handleToken);
 
-// TODO: make it as seperate module
+// TODO: move to seperate module
 router.get('/resource', oauth.authenticate(), (req, res) => {
   res.send(res.locals.tokens);
 });

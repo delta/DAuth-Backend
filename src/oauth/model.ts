@@ -36,22 +36,27 @@ const getClient = async (
 const getAuthorizationCode = async (
   authorizationCode: string
 ): Promise<OAuth2Server.AuthorizationCode | Falsey> => {
-  const code = await prisma.code.findUnique({
-    where: {
-      code: authorizationCode
-    },
-    select: {
-      code: true,
-      expireAt: true,
-      redirectUri: true,
-      scope: true,
-      client: true,
-      user: true
-    }
-  });
+  try {
+    const code = await prisma.code.findUnique({
+      where: {
+        code: authorizationCode
+      },
+      select: {
+        code: true,
+        expireAt: true,
+        redirectUri: true,
+        scope: true,
+        client: true,
+        user: true
+      }
+    });
 
-  if (!code) return null;
-  return getOauth2AuthorizationCode(code);
+    if (!code) return null;
+    return getOauth2AuthorizationCode(code);
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
 };
 
 const saveToken = async (
@@ -71,6 +76,7 @@ const saveToken = async (
     });
     return getOauth2accessToken({ token, client, user });
   } catch (error) {
+    console.log(error);
     return null;
   }
 };
@@ -83,11 +89,11 @@ const saveAuthorizationCode = async (
   try {
     await prisma.code.create({
       data: {
+        userId: user.id,
+        clientId: client.primaryKey,
         code: code.authorizationCode,
         scope: code.scope as string,
         redirectUri: code.redirectUri,
-        userId: user.id,
-        clientId: client.primaryKey,
         expireAt: code.expiresAt
       }
     });
@@ -103,6 +109,7 @@ const saveAuthorizationCode = async (
 
     return response;
   } catch (error) {
+    console.log(error);
     return null;
   }
 };
@@ -118,6 +125,7 @@ const revokeAuthorizationCode = async (
     });
     return true;
   } catch (error) {
+    console.log(error);
     return false;
   }
 };
@@ -125,27 +133,32 @@ const revokeAuthorizationCode = async (
 const getAccessToken = async (
   accessToken: string
 ): Promise<OAuth2Server.Token | Falsey> => {
-  const token = await prisma.token.findUnique({
-    where: {
-      accessToken: accessToken
-    },
-    select: {
-      client: true,
-      accessToken: true,
-      scope: true,
-      user: true,
-      expireAt: true
-    }
-  });
-  if (!token) return null;
+  try {
+    const token = await prisma.token.findUnique({
+      where: {
+        accessToken: accessToken
+      },
+      select: {
+        client: true,
+        accessToken: true,
+        scope: true,
+        user: true,
+        expireAt: true
+      }
+    });
+    if (!token) return null;
 
-  return {
-    accessToken: token.accessToken,
-    accessTokenExpiresAt: token.expireAt,
-    scope: token.scope,
-    client: getOAuth2Client(token.client),
-    user: token.user
-  };
+    return {
+      accessToken: token.accessToken,
+      accessTokenExpiresAt: token.expireAt,
+      scope: token.scope,
+      client: getOAuth2Client(token.client),
+      user: token.user
+    };
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
 };
 
 const verifyScope = async (

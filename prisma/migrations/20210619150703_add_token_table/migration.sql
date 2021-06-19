@@ -24,6 +24,7 @@ ALTER TABLE `Client` DROP PRIMARY KEY,
 
 -- AlterTable
 ALTER TABLE `Code` ADD COLUMN `expireAt` DATETIME(3) NOT NULL,
+    MODIFY `scope` VARCHAR(191),
     MODIFY `clientId` INTEGER NOT NULL;
 
 -- DropTable

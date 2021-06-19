@@ -1,4 +1,7 @@
-import OAuth2Server, { ServerOptions } from 'oauth2-server';
+import OAuth2Server, {
+  ServerOptions,
+  UnauthorizedRequestError
+} from 'oauth2-server';
 import { NextFunction, Request, Response } from 'express';
 
 /**
@@ -21,7 +24,7 @@ class ExpressOAuthServer {
   }
 
   // authenticates the token
-  // must be invoked before accessing resources
+  // must be invoked before accessing protected resources
   authenticate = (
     options?: OAuth2Server.AuthenticateOptions
   ): ((
@@ -40,8 +43,7 @@ class ExpressOAuthServer {
           next();
         })
         .catch((error) => {
-          console.log(error);
-          return res.status(error.status || 500).json({ error });
+          this.handleError(error, req, res, response);
         });
     };
   };
@@ -62,12 +64,13 @@ class ExpressOAuthServer {
         .authorize(request, response, options)
         .then((code) => {
           res.locals.code = { code };
-          //TODO: don't forget redirect to client with authorization_code
+          res.locals.location = response.headers?.location;
+          res.set(response.headers);
           next();
         })
         .catch((error) => {
           console.log(error);
-          return res.status(error.status || 500).json({ error });
+          this.handleError(error, req, res, response);
         });
     };
   };
@@ -92,10 +95,29 @@ class ExpressOAuthServer {
           next();
         })
         .catch((error) => {
-          console.log(error);
-          return res.status(error.status || 500).json({ error });
+          this.handleError(error, req, res, response);
         });
     };
+  };
+
+  // error handler
+  handleError = (
+    e: any,
+    req: Request,
+    res: Response,
+    response: OAuth2Server.Response
+  ): Response => {
+    if (response) {
+      res.set(response.headers);
+    }
+
+    res.status(e.code);
+
+    if (e instanceof UnauthorizedRequestError) {
+      return res.send();
+    }
+
+    return res.json({ error: e.name, error_description: e.message });
   };
 }
 

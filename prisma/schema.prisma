@@ -56,7 +56,7 @@ model Client {
 model Code {
   id          Int           @id @default(autoincrement())
   code        String        @unique
-  scope       String
+  scope       String?
   state       String?
   redirectUri String
   nonce       String?

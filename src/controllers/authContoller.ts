@@ -239,33 +239,31 @@ export const login = (req: Request, res: Response): Response => {
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-  // if query session is there, redirect user to authorization page
-  const query = (req.session as any).query;
-
-  // destroying session
-  req.session.destroy((err) => {
-    if (err) throw new Error(err);
-  });
-
   return passport.authenticate('local', (err, user: ResourceOwner) => {
     if (err) return res.status(500).json({ message: 'Internal Server Error' });
 
     if (!user) return res.status(401).json({ message: 'Invalid Credentials' });
 
+    // if query session is there, redirect user to authorization page
+    const query = (req.session as any).query;
+    (req.session as any).query = null;
     req.logIn(user, function (err) {
-      if (err)
+      if (err) {
         return res.status(500).json({ message: 'Internal server error' });
-
-      if (query) {
-        const urlParsed = buildUrl(
-          `${process.env.FRONTEND_URL}/oauth/authorize`,
-          query
-        );
-        res.redirect(urlParsed.href);
-        return;
       }
 
-      return res.status(200).json({ message: 'Login successful', user: user });
+      if (query) {
+        // TODO: redirect to authorize page
+        // const urlParsed = buildUrl(
+        //   `${process.env.FRONTEND_URL}/oauth/authorize`,
+        //   query
+        // );
+        // res.redirect(urlParsed.href);
+        console.log(query);
+        return res.status(200).json({ message: 'user can authorize now' });
+      }
+
+      return res.status(200).json({ message: 'Login successful' });
     });
   })(req, res);
 };
