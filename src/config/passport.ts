@@ -24,6 +24,9 @@ const getUserById = async (id: number): Promise<ResourceOwner | null> => {
   return await prisma.resourceOwner.findUnique({
     where: {
       id: id
+    },
+    include: {
+      email: true
     }
   });
 };
@@ -34,7 +37,7 @@ const authenticateUser = async (email: string, password: string, done: any) => {
     return done(null, false, { message: 'Email not found' });
   }
   try {
-    if (await bcrypt.compare(password, user.password)) {
+    if (await bcrypt.compare(password, user.password as string)) {
       return done(null, user);
     } else {
       return done(null, false, { message: 'Password incorrect' });

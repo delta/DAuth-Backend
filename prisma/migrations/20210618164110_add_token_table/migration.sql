@@ -36,6 +36,7 @@ CREATE TABLE `Token` (
     `expireAt` DATETIME(3) NOT NULL,
     `userId` INTEGER NOT NULL,
     `clientId` INTEGER NOT NULL,
+    `scope` VARCHAR(191) NOT NULL,
 
     UNIQUE INDEX `Token.accessToken_unique`(`accessToken`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

@@ -10,6 +10,7 @@ import {
 } from '../utils/utils';
 import passport from 'passport';
 import { ResourceOwner } from '.prisma/client';
+import { buildUrl } from '../utils/oauth';
 
 export const validateRegisterFields = [
   check('name').exists().trim().not().isEmpty().withMessage('Name is required'),
@@ -235,8 +236,16 @@ export const register = async (
 
 export const login = (req: Request, res: Response): Response => {
   const errors = validationResult(req);
-  if (!errors.isEmpty())
+  if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
+  }
+  // if query session is there, redirect user to authorization page
+  const query = (req.session as any).query;
+
+  // destroying session
+  req.session.destroy((err) => {
+    if (err) throw new Error(err);
+  });
 
   return passport.authenticate('local', (err, user: ResourceOwner) => {
     if (err) return res.status(500).json({ message: 'Internal Server Error' });
@@ -246,6 +255,15 @@ export const login = (req: Request, res: Response): Response => {
     req.logIn(user, function (err) {
       if (err)
         return res.status(500).json({ message: 'Internal server error' });
+
+      if (query) {
+        const urlParsed = buildUrl(
+          `${process.env.FRONTEND_URL}/oauth/authorize`,
+          query
+        );
+        res.redirect(urlParsed.href);
+        return;
+      }
 
       return res.status(200).json({ message: 'Login successful', user: user });
     });

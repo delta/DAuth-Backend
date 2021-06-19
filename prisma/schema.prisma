@@ -76,6 +76,7 @@ model Token {
   userId      Int
   client      Client        @relation(fields: [clientId], references: [id])
   clientId    Int
+  scope       String
 }
 
 model AuthorisedApps {

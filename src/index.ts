@@ -1,4 +1,4 @@
-import express, { Application, NextFunction, Request, Response } from 'express';
+import express, { Application, Request, Response } from 'express';
 import session from 'express-session';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
@@ -9,6 +9,7 @@ dotenv.config();
 
 // Routers
 import authRouter from './routes/auth';
+import oauthRouter from './routes/oauth';
 
 import { initialisePassport } from './config/passport';
 
@@ -53,6 +54,9 @@ initialisePassport(app);
 
 // Authentication Routes
 app.use('/auth', authRouter);
+
+// Authentication Routes
+app.use('/oauth', oauthRouter);
 
 app.get('/', async (req: Request, res: Response): Promise<Response> => {
   return res.status(200).send('work in progress');
