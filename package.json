@@ -10,7 +10,7 @@
     "lint": "eslint . --ext .ts --fix",
     "format": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "prepare": "husky install",
-    "session:debug":"DEBUG=express-session npm run dev"
+    "session:debug": "DEBUG=express-session npm run dev"
   },
   "repository": {
     "type": "git",
@@ -55,6 +55,7 @@
     "express-session": "^1.17.2",
     "express-validator": "^6.11.1",
     "helmet": "^4.6.0",
+    "jose": "^2.0.5",
     "libphonenumber-js": "^1.9.19",
     "oauth2-server": "^3.1.1",
     "passport": "^0.4.1",

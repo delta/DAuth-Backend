@@ -1,5 +1,6 @@
 import { Client } from '.prisma/client';
 import { ResourceOwner } from '@prisma/client';
+import e from 'cors';
 import OAuth2Server from 'oauth2-server';
 import { URL } from 'url';
 import prisma from '../config/prismaClient';
@@ -80,5 +81,25 @@ export const saveStateAndNonce = async (
   } catch (error) {
     console.log(error);
     return false;
+  }
+};
+
+export const isAuthorizedApp = async (
+  clientId: number,
+  userId: number
+): Promise<boolean> => {
+  try {
+    const app = await prisma.authorisedApps.findUnique({
+      where: {
+        clientId_userId: {
+          clientId: clientId,
+          userId: userId
+        }
+      }
+    });
+    if (!app) return false;
+    return true;
+  } catch (error) {
+    throw new Error(error);
   }
 };

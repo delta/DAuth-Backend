@@ -4,7 +4,9 @@ import {
   handleAuthorize,
   checkAuthenticated,
   validateClient,
-  handleToken
+  handleToken,
+  getClaims,
+  isClientAuthorized
 } from '../controllers/oauthContoller';
 import oauth from '../oauth/index';
 
@@ -17,7 +19,12 @@ const router: Router = express.Router();
 // state         |
 // scope         |
 // nonce         |
-router.get('/authorize', checkAuthenticated, validateClient);
+router.get(
+  '/authorize',
+  checkAuthenticated,
+  validateClient,
+  isClientAuthorized
+);
 
 // authorize route
 // 'false' === req.query.allowed, for user who denied access to application
@@ -34,10 +41,11 @@ router.post(
   handleAuthorize
 );
 
-router.post('/token', oauth.token(), handleToken);
+router.post('/token', getClaims, oauth.token(), handleToken);
 
-// TODO: move to seperate module
-router.get('/resource', oauth.authenticate(), (req, res) => {
-  res.send(res.locals.tokens);
+// TODO: make a seperate router
+router.post('/resource', oauth.authenticate(), (req, res) => {
+  res.send('resource working');
 });
+
 export default router;

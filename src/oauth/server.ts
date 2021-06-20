@@ -40,6 +40,7 @@ class ExpressOAuthServer {
         .authenticate(request, response, options)
         .then((token) => {
           res.locals.token = { token };
+          res.set(response.headers);
           next();
         })
         .catch((error) => {
@@ -91,10 +92,11 @@ class ExpressOAuthServer {
         .token(request, response, options)
         .then((token) => {
           res.locals.token = { token };
-          //TODO: send id token with the response
+          res.set(response.headers);
           next();
         })
         .catch((error) => {
+          console.log(error);
           this.handleError(error, req, res, response);
         });
     };

@@ -246,20 +246,19 @@ export const login = (req: Request, res: Response): Response => {
 
     // if query session is there, redirect user to authorization page
     const query = (req.session as any).query;
-    (req.session as any).query = null;
     req.logIn(user, function (err) {
       if (err) {
         return res.status(500).json({ message: 'Internal server error' });
       }
 
       if (query) {
+        (req.session as any).query = null;
         // TODO: redirect to authorize page
         // const urlParsed = buildUrl(
         //   `${process.env.FRONTEND_URL}/oauth/authorize`,
         //   query
         // );
         // res.redirect(urlParsed.href);
-        console.log(query);
         return res.status(200).json({ message: 'user can authorize now' });
       }
 
