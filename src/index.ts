@@ -56,7 +56,7 @@ initialisePassport(app);
 // Authentication Routes
 app.use('/auth', authRouter);
 
-// Authentication Routes
+// OAuth Routes
 app.use('/oauth', oauthRouter);
 
 // Key Routes
