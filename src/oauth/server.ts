@@ -70,7 +70,6 @@ class ExpressOAuthServer {
           next();
         })
         .catch((error) => {
-          console.log(error);
           this.handleError(error, req, res, response);
         });
     };
@@ -96,7 +95,6 @@ class ExpressOAuthServer {
           next();
         })
         .catch((error) => {
-          console.log(error);
           this.handleError(error, req, res, response);
         });
     };

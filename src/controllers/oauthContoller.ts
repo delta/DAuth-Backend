@@ -113,7 +113,6 @@ export const getClaims = async (
     res.locals.code = authCode;
     next();
   } catch (error) {
-    console.log(error);
     next();
   }
 };
@@ -124,7 +123,6 @@ export const getClaims = async (
 export const handleToken = (req: Request, res: Response) => {
   const { token } = res.locals.token;
   const code = res.locals.code;
-  console.log(code);
   const user = req.user;
   const response: any = {
     token_type: 'Bearer',

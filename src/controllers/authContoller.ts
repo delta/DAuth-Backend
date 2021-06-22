@@ -130,7 +130,6 @@ export const start = async (req: Request, res: Response): Promise<unknown> => {
       .status(200)
       .json({ message: 'Verification link sent successfully' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -229,7 +228,6 @@ export const register = async (
     });
     return res.status(200).json({ message: 'Registration successful' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };

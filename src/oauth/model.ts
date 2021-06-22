@@ -54,7 +54,6 @@ const getAuthorizationCode = async (
     if (!code) return null;
     return getOauth2AuthorizationCode(code);
   } catch (error) {
-    console.log(error);
     return null;
   }
 };
@@ -76,7 +75,6 @@ const saveToken = async (
     });
     return getOauth2accessToken({ token, client, user });
   } catch (error) {
-    console.log(error);
     return null;
   }
 };
@@ -109,7 +107,6 @@ const saveAuthorizationCode = async (
 
     return response;
   } catch (error) {
-    console.log(error);
     return null;
   }
 };
@@ -125,7 +122,6 @@ const revokeAuthorizationCode = async (
     });
     return true;
   } catch (error) {
-    console.log(error);
     return false;
   }
 };
@@ -156,7 +152,6 @@ const getAccessToken = async (
       user: token.user
     };
   } catch (error) {
-    console.log(error);
     return null;
   }
 };
