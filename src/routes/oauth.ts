@@ -41,9 +41,13 @@ router.post(
   handleAuthorize
 );
 
+// token route, should/will be a backchannel communication
 router.post('/token', getClaims, oauth.token(), handleToken);
 
-// TODO: make a seperate router
+// TODO: make a seperate router for resources (respected scopes included)
+// resources:
+// -> user object
+// -> tags
 router.post('/resource', oauth.authenticate(), (req, res) => {
   res.send('resource working');
 });

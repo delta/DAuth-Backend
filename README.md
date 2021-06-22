@@ -43,6 +43,6 @@ client_id=qwdsfgwrTHNHRMYUKTILY&client_secret=csadvfbgnrwmywtkulifjrknjvnjrnlrnj
 ### key endpoint
 
 ```HTTP
-GET /oauth/oidc/ HTTP/1.1
+GET /oauth/oidc/key HTTP/1.1
 Host: localhost:3001
 ```

@@ -92,7 +92,7 @@ export const getClaims = async (
   res: Response,
   next: NextFunction
 ) => {
-  // getting cliams from before revoke aithorization code for id token
+  // getting cliams from before revoke authorization code for id token
   const { code } = req.body;
   if (!code) {
     next();
@@ -120,7 +120,7 @@ export const getClaims = async (
 
 // handler for token endpoint
 // oauth2-server doesn't support oidc
-// have to generate id_token manually with required cliams for the given sopes
+// have to generate id_token manually with required cliams for the given scopes
 export const handleToken = (req: Request, res: Response) => {
   const { token } = res.locals.token;
   const code = res.locals.code;
@@ -139,8 +139,8 @@ export const handleToken = (req: Request, res: Response) => {
   res.status(200).json(response);
 };
 
-// handler to check if user already authorized the client
-// show authorization page, if isAuthorized === false
+// middleware to check if user already authorized the client
+// show authorization page, if isAuthorized === false : else proceed directly
 export const isClientAuthorized = async (req: Request, res: Response) => {
   const client = res.locals.client;
   const user: any = req.user;

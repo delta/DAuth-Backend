@@ -21,6 +21,7 @@ export const removeWhiteSpaces = (value: string): string => {
   return value.replace(/\s+/g, '');
 };
 
+// helper to generate id token(jwt) for oidc(user authentication)
 export const generateIdToken = (
   scope: string,
   user: any,
@@ -48,7 +49,7 @@ export const generateIdToken = (
   const idToken = JWT.sign(payload, JWK.asKey(privateJwk), {
     audience: clientId,
     issuer: process.env.FRONTEND_URL,
-    expiresIn: '5 m',
+    expiresIn: '5 m', // 5 minutes
     header: {
       typ: 'JWT'
     }

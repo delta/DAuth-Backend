@@ -1,6 +1,7 @@
 import ExpressOAuthServer from './server';
 import model from './model';
 
+// oauth2 server instance to couple with our routes as middlewares
 export default new ExpressOAuthServer({
   model: model,
   allowEmptyState: false,
