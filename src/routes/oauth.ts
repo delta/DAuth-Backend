@@ -2,7 +2,6 @@ import express, { Router, Request } from 'express';
 import { isAuthenticated } from '../controllers/authContoller';
 import {
   handleAuthorize,
-  checkAuthenticated,
   validateClient,
   handleToken,
   getClaims,
@@ -19,12 +18,7 @@ const router: Router = express.Router();
 // state         |
 // scope         |
 // nonce         |
-router.get(
-  '/authorize',
-  checkAuthenticated,
-  validateClient,
-  isClientAuthorized
-);
+router.get('/authorize', isAuthenticated, validateClient, isClientAuthorized);
 
 // authorize route
 // 'false' === req.query.allowed, for user who denied access to application

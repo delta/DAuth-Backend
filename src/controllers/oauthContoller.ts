@@ -32,27 +32,11 @@ export const handleAuthorize = async (req: Request, res: Response) => {
 
     if (!isUpdated)
       return res.status(500).json({ message: 'Internal server error' });
-
+    // redirecting to client app with auth code and state as query params
     return res.status(302).redirect(location);
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }
-};
-
-export const checkAuthenticated = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Response | undefined => {
-  // if user not authenticated, redirect him to login page
-  // saving query in session, to redirect again him to authorize page
-  if (!req.isAuthenticated()) {
-    (req.session as any).query = req.query;
-    return res.status(200).json({ message: 'user can login now!' });
-    // res.redirect(`${process.env.FRONTEND_URL}/login`);
-  }
-
-  next();
 };
 
 export const validateClient = async (
@@ -92,7 +76,7 @@ export const getClaims = async (
   res: Response,
   next: NextFunction
 ) => {
-  // getting cliams from before revoke authorization code for id token
+  // getting cliams from code before revoke authorization code, for id_token
   const { code } = req.body;
   if (!code) {
     next();
@@ -119,7 +103,7 @@ export const getClaims = async (
 
 // handler for token endpoint
 // oauth2-server doesn't support oidc
-// have to generate id_token manually with required cliams for the given scopes
+// have to generate id_token with required cliams for the given scopes
 export const handleToken = (req: Request, res: Response) => {
   const { token } = res.locals.token;
   const code = res.locals.code;

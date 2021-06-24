@@ -86,6 +86,7 @@ export const start = async (req: Request, res: Response): Promise<unknown> => {
       select: {
         id: true,
         isActivated: true,
+        expireAt: true,
         ResourceOwner: {
           select: {
             id: true
@@ -94,14 +95,21 @@ export const start = async (req: Request, res: Response): Promise<unknown> => {
       }
     });
     // check if user is already registered with that email
-    if (user?.ResourceOwner?.id)
+    if (user?.ResourceOwner?.id && user.ResourceOwner.id)
       return res.status(409).json({ message: 'User already exists' });
+
+    // check expiration time
+    if (user?.expireAt && user.expireAt > new Date())
+      return res
+        .status(409)
+        .json({ message: 'Verification Link already sent' });
 
     // 128 characters (url-safe)
     const activationCode = generateActivationCode();
     const expireAt = expireDate(
-      process.env.MAIL_VERIFICATION_EXPIRY_TIME as string
+      process.env.MAIL_VERIFICATION_EXPIRY_TIME || '10'
     );
+
     // update activation code or create if not present
     // TODO: check for activation code expiry
     await prisma.email.upsert({
@@ -120,8 +128,7 @@ export const start = async (req: Request, res: Response): Promise<unknown> => {
       }
     });
 
-    // TODO
-    // mail verification link
+    // TODO: mail verification link
     console.log(
       `[verificationLink]: `,
       `http://localhost:3001/auth/email/verify/${activationCode}`
@@ -242,22 +249,9 @@ export const login = (req: Request, res: Response): Response => {
 
     if (!user) return res.status(401).json({ message: 'Invalid Credentials' });
 
-    // if query session is there, redirect user to authorization page
-    const query = (req.session as any).query;
     req.logIn(user, function (err) {
       if (err) {
         return res.status(500).json({ message: 'Internal server error' });
-      }
-
-      if (query) {
-        (req.session as any).query = null;
-        // TODO: redirect to authorize page
-        // const urlParsed = buildUrl(
-        //   `${process.env.FRONTEND_URL}/oauth/authorize`,
-        //   query
-        // );
-        // res.redirect(urlParsed.href);
-        return res.status(200).json({ message: 'user can authorize now' });
       }
 
       return res.status(200).json({ message: 'Login successful' });
