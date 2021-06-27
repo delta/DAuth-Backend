@@ -1,5 +1,4 @@
 import express, { Router } from 'express';
-import { session } from 'passport';
 const router: Router = express.Router();
 import {
   isAuth,
