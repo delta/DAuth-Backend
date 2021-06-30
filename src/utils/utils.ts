@@ -56,3 +56,11 @@ export const generateIdToken = (
   });
   return idToken;
 };
+
+export const generateClientId = (): string => {
+  return cryptoRandomString({ length: 16, type: 'url-safe' });
+};
+
+export const generateClientSecret = (): string => {
+  return cryptoRandomString({ length: 32, type: 'url-safe' });
+};

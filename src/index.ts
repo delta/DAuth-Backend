@@ -11,6 +11,7 @@ dotenv.config();
 import authRouter from './routes/auth';
 import oauthRouter from './routes/oauth';
 import keyRoute from './routes/key';
+import clientRouter from './routes/client';
 
 import { initialisePassport } from './config/passport';
 
@@ -61,6 +62,9 @@ app.use('/oauth', oauthRouter);
 
 // Key Routes
 app.use('/oauth/oidc', keyRoute);
+
+// Client Routes
+app.use('/client', clientRouter);
 
 app.get('/', async (req: Request, res: Response): Promise<Response> => {
   return res.status(200).send('work in progress');
