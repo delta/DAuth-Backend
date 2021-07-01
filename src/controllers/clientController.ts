@@ -46,8 +46,8 @@ export const registerClient = async (
   const { name, homepageUrl, callbackUrl, description } = req.body;
   try {
     // generate client credentials
-    const clientId = await generateClientId();
-    const clientSecret = await generateClientSecret();
+    const clientId = generateClientId();
+    const clientSecret = generateClientSecret();
 
     const user: any = req.user;
     // create client
