@@ -57,10 +57,10 @@ export const removeAccess = async (req: Request, res: Response): Promise<unknown
           }
         }
       });
-      return res.status(204).json({ message: 'Removed authorized app' });
+      return res.status(200).json({ message: 'Removed authorization to ' });
     } catch (error) {
       return res.status(500).json({ message: 'Unable to process your request' });
     }
   }
-  return res.status(401).json({ message: 'Invalid request' });
+  return res.status(401).json({ message: 'User not authenticated' });
 }
