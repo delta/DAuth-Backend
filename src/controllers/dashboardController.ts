@@ -25,7 +25,7 @@ export const userInfo = async (req: Request, res: Response): Promise<unknown> =>
               select:{
                 id: true,
                 name: true,
-                redirectUri: true
+                homePageUrl: true
               }
             },
             createdAt: true
