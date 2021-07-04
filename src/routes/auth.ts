@@ -1,6 +1,8 @@
 import express, { Router } from 'express';
 const router: Router = express.Router();
 import {
+  checkSession,
+  getDepartments,
   isAuth,
   isAuthenticated,
   isNotAuthenticated,
@@ -32,9 +34,13 @@ router.use(isNotAuthenticated);
 router.post('/start', validateStartFields, start);
 // verify email route
 router.get('/email/verify/:id', verfiyEmail);
+// check verification
+router.get('/check-verification', checkSession);
 // register route
 router.post('/register', validateRegisterFields, register);
 // login route
 router.post('/login', validateLoginFields, login);
+// get all departments
+router.get('/departments', getDepartments);
 
 export default router;

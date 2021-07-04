@@ -90,3 +90,8 @@ model AuthorisedApps {
 
   @@id([clientId, userId])
 }
+
+model Department{
+  id          Int           @id @default(autoincrement())
+  department  String
+}

@@ -293,6 +293,30 @@ export const isNotAuthenticated = (
 ): Response | undefined => {
   if (req.isAuthenticated())
     return res.status(400).json({ message: 'User already authenticated' });
-
   next();
+};
+
+export const getDepartments = async (
+  req: Request,
+  res: Response
+): Promise<unknown> => {
+  const departments = await prisma.department.findMany({
+    select: {
+      department: true
+    }
+  });
+  return res.status(200).json(departments);
+};
+
+export const checkSession = async (
+  req: Request,
+  res: Response
+): Promise<unknown> => {
+  const verifiedEmail = (req as any).session.verifiedEmail;
+  if (!verifiedEmail)
+    return res.status(408).json({ message: 'Email not verified.' });
+  else
+    return res
+      .status(200)
+      .json({ message: 'Webmail verified, continue with the registration.' });
 };
