@@ -1,7 +1,6 @@
 import express, { Router } from 'express';
 const router: Router = express.Router();
 import {
-  checkSession,
   getDepartments,
   isAuth,
   isAuthenticated,
@@ -13,7 +12,7 @@ import {
   validateLoginFields,
   validateRegisterFields,
   validateStartFields,
-  verfiyEmail
+  verifyEmail
 } from '../controllers/authContoller';
 
 /**
@@ -33,9 +32,7 @@ router.use(isNotAuthenticated);
 // register session start route
 router.post('/start', validateStartFields, start);
 // verify email route
-router.get('/email/verify/:id', verfiyEmail);
-// check verification
-router.get('/check-verification', checkSession);
+router.get('/email/verify/:id', verifyEmail);
 // register route
 router.post('/register', validateRegisterFields, register);
 // login route

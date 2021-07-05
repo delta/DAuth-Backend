@@ -93,5 +93,5 @@ model AuthorisedApps {
 
 model Department{
   id          Int           @id @default(autoincrement())
-  department  String
+  department  String        @unique
 }

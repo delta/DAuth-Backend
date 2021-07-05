@@ -141,7 +141,7 @@ export const start = async (req: Request, res: Response): Promise<unknown> => {
   }
 };
 
-export const verfiyEmail = async (
+export const verifyEmail = async (
   req: Request,
   res: Response
 ): Promise<unknown> => {
@@ -162,7 +162,7 @@ export const verfiyEmail = async (
       email.isActivated &&
       (req as any).session.verifiedEmail?.email === email.email
     ) {
-      return res.status(200).json({ message: 'Email Already Verified' });
+      return res.status(302).redirect(`${process.env.FRONTEND_URL}/registerdetails`);
     }
 
     if (email.activationCode !== activationCode)
@@ -187,7 +187,8 @@ export const verfiyEmail = async (
     (req as any).session.verifiedEmail = verifiedEmail;
     // saving session, being extra safe :)
     req.session.save(() => {
-      return res.status(200).json({ message: 'Email verified Successfully' });
+      return res.status(302).redirect(`${process.env.FRONTEND_URL}/registerdetails`);
+      //return res.status(200).json({ message: 'Email verified Successfully' });
     });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
@@ -305,18 +306,6 @@ export const getDepartments = async (
       department: true
     }
   });
+  if(!departments) res.status(400).json({message:'Failed to load departments'});
   return res.status(200).json(departments);
-};
-
-export const checkSession = async (
-  req: Request,
-  res: Response
-): Promise<unknown> => {
-  const verifiedEmail = (req as any).session.verifiedEmail;
-  if (!verifiedEmail)
-    return res.status(408).json({ message: 'Email not verified.' });
-  else
-    return res
-      .status(200)
-      .json({ message: 'Webmail verified, continue with the registration.' });
 };
