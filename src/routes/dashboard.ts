@@ -8,6 +8,6 @@ const router: Router = express.Router();
 router.get('/apps', isAuthenticated, userInfo);
 
 //revokes authorization access of a user to a client
-router.post('/remove-access',isAuthenticated, removeAccess);
+router.post('/remove-access', isAuthenticated, removeAccess);
 
 export default router;

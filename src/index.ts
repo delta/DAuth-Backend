@@ -12,8 +12,7 @@ import authRouter from './routes/auth';
 import oauthRouter from './routes/oauth';
 import keyRoute from './routes/key';
 import clientRouter from './routes/client';
-import dashboardRoute from './routes/dashboard'
-
+import dashboardRoute from './routes/dashboard';
 
 import { initialisePassport } from './config/passport';
 
