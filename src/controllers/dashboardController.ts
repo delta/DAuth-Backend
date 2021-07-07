@@ -49,26 +49,25 @@ export const removeAccess = async (
   const user: any = req.user;
   if (req.body.clientId) {
     try {
-      const app = await prisma.authorisedApps.findUnique({
-        where: {
-          clientId_userId:{
-            clientId: req.body.clientId,
-            userId: user.id
-          }
-        },
-        include: {
-          client: true
-        }
-      });
-      await prisma.authorisedApps.delete({
+      const app = await prisma.authorisedApps.delete({
         where: {
           clientId_userId: {
             clientId: req.body.clientId,
             userId: user.id
           }
+        },
+        select: {
+          clientId: true,
+          client : {
+            select: {
+              name: true
+            }
+          }
         }
       });
-      return res.status(200).json({ message: 'Removed authorization to ' + app?.client.name, app});
+      return res
+        .status(200)
+        .json({ message: 'Removed authorization to ' + app?.client.name, app });
     } catch (error) {
       return res.status(500).json({ message: 'Internal server error' });
     }
