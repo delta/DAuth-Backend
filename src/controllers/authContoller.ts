@@ -225,6 +225,13 @@ export const register = async (
     // generate salt to hash password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
+    //check if department exists in db
+    const userDepartment = await prisma.department.findUnique({
+      where:{
+        department:department
+      }
+    });
+    if(!userDepartment) return res.status(406).json({message: 'The department is invalid.'})
     // create user
     await prisma.resourceOwner.create({
       data: {
