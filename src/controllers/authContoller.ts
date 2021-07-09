@@ -24,9 +24,10 @@ export const validateRegisterFields = [
     .exists()
     .trim()
     .toInt()
+    .isAfter('1950')
     .not()
     .isEmpty()
-    .withMessage('Year is required'),
+    .withMessage('Invalid batch details'),
   check('department')
     .exists()
     .trim()
@@ -48,6 +49,7 @@ export const validateLoginFields = [
   check('email')
     .exists()
     .normalizeEmail()
+    .contains('@nitt.edu')
     .not()
     .isEmpty()
     .isEmail()
@@ -59,6 +61,7 @@ export const validateStartFields = [
   check('email')
     .exists()
     .normalizeEmail()
+    .contains('@nitt.edu')
     .not()
     .isEmpty()
     .isEmail()
@@ -131,7 +134,7 @@ export const start = async (req: Request, res: Response): Promise<unknown> => {
     // TODO: mail verification link
     console.log(
       `[verificationLink]: `,
-      `http://localhost:3001/auth/email/verify/${activationCode}`
+      `${process.env.FRONTEND_URL}/verify?token=${activationCode}`
     );
     return res
       .status(200)
@@ -141,7 +144,7 @@ export const start = async (req: Request, res: Response): Promise<unknown> => {
   }
 };
 
-export const verfiyEmail = async (
+export const verifyEmail = async (
   req: Request,
   res: Response
 ): Promise<unknown> => {
@@ -162,7 +165,7 @@ export const verfiyEmail = async (
       email.isActivated &&
       (req as any).session.verifiedEmail?.email === email.email
     ) {
-      return res.status(200).json({ message: 'Email Already Verified' });
+      return res.status(200).json({ message: 'Email already verified' });
     }
 
     if (email.activationCode !== activationCode)
@@ -222,6 +225,13 @@ export const register = async (
     // generate salt to hash password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
+    //check if department exists in db
+    const userDepartment = await prisma.department.findUnique({
+      where:{
+        department:department
+      }
+    });
+    if(!userDepartment) return res.status(406).json({message: 'The department is invalid.'})
     // create user
     await prisma.resourceOwner.create({
       data: {
@@ -293,6 +303,21 @@ export const isNotAuthenticated = (
 ): Response | undefined => {
   if (req.isAuthenticated())
     return res.status(400).json({ message: 'User already authenticated' });
-
   next();
+};
+
+export const getDepartments = async (
+  req: Request,
+  res: Response
+): Promise<unknown> => {
+  try {
+    const departments = await prisma.department.findMany({
+      select: {
+        department: true
+      }
+    });
+    return res.status(200).json(departments);
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
 };

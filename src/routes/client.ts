@@ -8,7 +8,7 @@ import {
 } from '../controllers/clientController';
 
 const router: Router = express.Router();
-router.use(isAuthenticated)
+router.use(isAuthenticated);
 
 // name         |
 // description  |-->fields required during registration.
