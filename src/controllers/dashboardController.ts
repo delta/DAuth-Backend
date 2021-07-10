@@ -58,7 +58,7 @@ export const removeAccess = async (
         },
         select: {
           clientId: true,
-          client : {
+          client: {
             select: {
               name: true
             }
