@@ -31,7 +31,7 @@ export const handleAuthorize = async (req: Request, res: Response) => {
         }
       });
 
-      await sendNewAppMail(user.name, user.email.email, app?.name || ' ');
+      await sendNewAppMail(user.email.email, user.name, app?.name || ' ');
     }
     // saving nonce and state with code
     // state will be send back with code and accesstoken response

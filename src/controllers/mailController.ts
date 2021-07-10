@@ -7,7 +7,7 @@ export const sendVerifyMail = async (req: Request, res: Response) => {
   const email: string = res.locals.email;
   const name = email.slice(0, -9);
   const linkText = 'verify';
-  const link = `${process.env.FRONTEND_URL}/verify/${res.locals.activationCode}`;
+  const link = `${process.env.FRONTEND_URL}/verify/?token=${res.locals.activationCode}`;
   const mailContent = getMailContent(name, link, content, linkText);
   try {
     await sendMail(email, subject, mailContent);
