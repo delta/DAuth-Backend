@@ -12,6 +12,7 @@ import authRouter from './routes/auth';
 import oauthRouter from './routes/oauth';
 import keyRoute from './routes/key';
 import clientRouter from './routes/client';
+import dashboardRoute from './routes/dashboard';
 
 import { initialisePassport } from './config/passport';
 
@@ -65,6 +66,9 @@ app.use('/oauth/oidc', keyRoute);
 
 // Client Routes
 app.use('/client', clientRouter);
+
+//Dashboard Routes
+app.use('/user', dashboardRoute);
 
 app.get('/', async (req: Request, res: Response): Promise<Response> => {
   return res.status(200).send('work in progress');
