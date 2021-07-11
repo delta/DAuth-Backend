@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import prisma from '../config/prismaClient';
+import { sendNewAppMail } from '../utils/mail';
 import { isAuthorizedApp, saveStateAndNonce } from '../utils/oauth';
 import { generateIdToken } from '../utils/utils';
 
@@ -20,6 +21,17 @@ export const handleAuthorize = async (req: Request, res: Response) => {
           userId: user.id
         }
       });
+
+      const app = await prisma.client.findUnique({
+        where: {
+          id: code.client.primaryKey
+        },
+        select: {
+          name: true
+        }
+      });
+
+      await sendNewAppMail(user.email.email, user.name, app?.name || ' ');
     }
     // saving nonce and state with code
     // state will be send back with code and accesstoken response

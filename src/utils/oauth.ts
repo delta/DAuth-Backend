@@ -1,6 +1,5 @@
 import { Client } from '.prisma/client';
 import { ResourceOwner } from '@prisma/client';
-import e from 'cors';
 import OAuth2Server from 'oauth2-server';
 import { URL } from 'url';
 import prisma from '../config/prismaClient';

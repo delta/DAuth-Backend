@@ -14,6 +14,7 @@ import {
   validateStartFields,
   verifyEmail
 } from '../controllers/authContoller';
+import { sendVerifyMail } from '../controllers/mailController';
 
 /**
 registration flow :
@@ -30,7 +31,7 @@ router.post('/logout', isAuthenticated, logout);
 
 router.use(isNotAuthenticated);
 // register session start route
-router.post('/start', validateStartFields, start);
+router.post('/start', validateStartFields, start, sendVerifyMail);
 // verify email route
 router.get('/email/verify/:id', verifyEmail);
 // register route
