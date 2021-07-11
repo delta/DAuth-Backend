@@ -1,8 +1,8 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { getMailContent, sendMail } from '../utils/mail';
 
 export const sendVerifyMail = async (req: Request, res: Response) => {
-  const content = `Thanks for signing up on Dauth.nitt.edu. We're thrilled to have you!. To get started, please click the link below to verify your webmail address.`;
+  const content = `Thanks for signing up on ${process.env.FRONTEND_URL}. We're thrilled to have you!. To get started, please click the link below to verify your webmail address.`;
   const subject = `Webmail verification`;
   const email: string = res.locals.email;
   const name = email.slice(0, -9);
