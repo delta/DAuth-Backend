@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  db:
+    container_name: dauth_db
+    image: mysql:8.0
+    volumes:
+      - ./mysql-volume:/var/lib/mysql
+    restart: always
+    cap_add:
+      - SYS_NICE
+    env_file:
+      - ./.docker.env
+
+  phpmyadmin:
+    container_name: dauth_pma
+    image: phpmyadmin
+    restart: always
+    env_file:
+      - ./.docker.env
+    ports:
+      - '${PMA_LOCAL_PORT}:80'
+    depends_on:
+      - db
+
+  redis:
+    image: redis:alpine
+    container_name: dauth_redis
+    restart: always
+    volumes: 
+      - ./redis-volume:/data
+
+  dauthserver:
+    container_name: dauth_backend
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    restart: always
+    depends_on:
+      - db
+      - redis
+    ports:
+      - '${API_LOCAL_PORT}:${PORT}'
+
