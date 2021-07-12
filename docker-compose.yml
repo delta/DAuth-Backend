@@ -19,7 +19,7 @@ services:
     env_file:
       - ./.docker.env
     ports:
-      - '${PMA_LOCAL_PORT}:${PMA_DOCKER_PORT}'
+      - '${PMA_LOCAL_PORT}:80'
     depends_on:
       - db
 
@@ -38,7 +38,7 @@ services:
       - db
       - redis
     ports:
-      - '${API_LOCAL_PORT}:${API_DOCKER_PORT}'
+      - '${API_LOCAL_PORT}:${PORT}'
 
 volumes:
   dauth_db:
