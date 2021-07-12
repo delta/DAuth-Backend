@@ -17,7 +17,6 @@ const transporter = nodeMailer.createTransport({
 if (isProd)
   transporter.verify(function (error) {
     if (error) {
-      console.log(error, 'cuiwddhiuhduci');
       throw error;
     }
   });
