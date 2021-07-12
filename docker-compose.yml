@@ -7,6 +7,8 @@ services:
     volumes:
       - dauth_db:/var/lib/mysql
     restart: always
+    cap_add:
+      - SYS_NICE
     env_file:
       - ./.docker.env
 
