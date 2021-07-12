@@ -1,3 +1,6 @@
 node_modules
 build
 prisma
+/redis-volume
+/mysql-volume
+

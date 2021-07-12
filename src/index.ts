@@ -1,5 +1,4 @@
 import express, { Application, Request, Response } from 'express';
-import session from 'express-session';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -16,6 +15,7 @@ import dashboardRouter from './routes/dashboard';
 import resourcesRouter from './routes/resources';
 
 import { initialisePassport } from './config/passport';
+import { initSession } from './config/session';
 
 const port = process.env.PORT;
 
@@ -41,17 +41,8 @@ app.use(
   })
 );
 
-// Session Middleware
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET as string,
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    }
-  })
-);
+// Initialise session
+initSession(app);
 
 // Initialise Passport
 initialisePassport(app);
