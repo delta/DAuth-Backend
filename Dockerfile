@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 FROM node:14.16.1
 WORKDIR /app
 ENV NODE_ENV=production
