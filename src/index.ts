@@ -15,6 +15,7 @@ import dashboardRouter from './routes/dashboard';
 import resourcesRouter from './routes/resources';
 
 import { initialisePassport } from './config/passport';
+import { initSession } from './config/session';
 
 const port = process.env.PORT;
 
@@ -39,6 +40,9 @@ app.use(
     ]
   })
 );
+
+// Initialise session
+initSession(app);
 
 // Initialise Passport
 initialisePassport(app);

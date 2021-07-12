@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3'
 
 services:
   db:
@@ -17,7 +17,7 @@ services:
     env_file:
       - ./.docker.env
     ports:
-      - '8080:80'
+      - '${PMA_LOCAL_PORT}:${PMA_DOCKER_PORT}'
     depends_on:
       - db
 
@@ -36,7 +36,7 @@ services:
       - db
       - redis
     ports:
-      - 8000:3001
+      - '${API_LOCAL_PORT}:${API_DOCKER_PORT}'
 
 volumes:
   dauth_db:

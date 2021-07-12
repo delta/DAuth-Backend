@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 
 npm install -g prisma
 # migration
 prisma migrate dev
-# build and run app
+# build & run app
 npm start
