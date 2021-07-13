@@ -4,7 +4,10 @@ import {
   getClientDetailsByUser,
   getClientList,
   registerClient,
-  validateClientRegisterFields
+  updateClient,
+  deleteClient,
+  validateClientRegisterFields,
+  generateSecret
 } from '../controllers/clientController';
 
 const router: Router = express.Router();
@@ -22,5 +25,14 @@ router.post('/details', getClientDetailsByUser);
 
 //fetch client details if the user is admin
 router.get('/list', getClientList);
+
+//update client details
+router.put('/update',updateClient);
+
+//delete client
+router.delete('/delete',deleteClient);
+
+//generate client secret
+router.post('/generate-secret',generateSecret);
 
 export default router;
