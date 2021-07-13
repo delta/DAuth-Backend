@@ -10,7 +10,6 @@ import {
 } from '../utils/utils';
 import passport from 'passport';
 import { ResourceOwner } from '.prisma/client';
-import { buildUrl } from '../utils/oauth';
 
 export const validateRegisterFields = [
   check('name').exists().trim().not().isEmpty().withMessage('Name is required'),
@@ -68,7 +67,11 @@ export const validateStartFields = [
     .withMessage('Invalid email address')
 ];
 
-export const start = async (req: Request, res: Response): Promise<unknown> => {
+export const start = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const errors = validationResult(req);
   if (!errors.isEmpty())
     return res.status(400).json({ errors: errors.array() });
@@ -131,14 +134,9 @@ export const start = async (req: Request, res: Response): Promise<unknown> => {
       }
     });
 
-    // TODO: mail verification link
-    console.log(
-      `[verificationLink]: `,
-      `${process.env.FRONTEND_URL}/verify?token=${activationCode}`
-    );
-    return res
-      .status(200)
-      .json({ message: 'Verification link sent successfully' });
+    res.locals.email = email;
+    res.locals.activationCode = activationCode;
+    next();
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }
@@ -227,11 +225,12 @@ export const register = async (
     const hashPassword = await bcrypt.hash(password, salt);
     //check if department exists in db
     const userDepartment = await prisma.department.findUnique({
-      where:{
-        department:department
+      where: {
+        department: department
       }
     });
-    if(!userDepartment) return res.status(406).json({message: 'The department is invalid.'})
+    if (!userDepartment)
+      return res.status(406).json({ message: 'The department is invalid.' });
     // create user
     await prisma.resourceOwner.create({
       data: {

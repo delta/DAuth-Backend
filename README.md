@@ -31,7 +31,7 @@ Content-Type: application/x-www-form-urlencoded
 client_id=qwdsfgwrTHNHRMYUKTILY&redirect_uri=https%3A%2F%2Fstackoverflow.com%2F&response_type=code&grant_type=authorization_code&state=sdafsdghb&scope=email+openid+profile&nonce=bscsbascbadcsbasccabs
 ```
 
-### token endpoint
+### Token endpoint
 ```HTTP
 POST /oauth/token HTTP/1.1
 Host: localhost:3001
@@ -46,3 +46,10 @@ client_id=qwdsfgwrTHNHRMYUKTILY&client_secret=csadvfbgnrwmywtkulifjrknjvnjrnlrnj
 GET /oauth/oidc/key HTTP/1.1
 Host: localhost:3001
 ```
+
+### Accepted Scopes
+- email
+- profile
+- openid
+- user
+  

@@ -8,7 +8,7 @@ export const userInfo = async (
 ): Promise<unknown> => {
   const user: any = req.user;
   try {
-    const userInfo: any = await prisma.resourceOwner.findUnique({
+    const userInfo = await prisma.resourceOwner.findUnique({
       where: {
         id: user.id
       },
@@ -28,7 +28,8 @@ export const userInfo = async (
               select: {
                 id: true,
                 name: true,
-                homePageUrl: true
+                homePageUrl: true,
+                description: true
               }
             },
             createdAt: true
@@ -58,7 +59,7 @@ export const removeAccess = async (
         },
         select: {
           clientId: true,
-          client : {
+          client: {
             select: {
               name: true
             }

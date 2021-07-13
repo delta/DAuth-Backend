@@ -1,7 +1,6 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import prisma from '../config/prismaClient';
 import { check, validationResult } from 'express-validator';
-import { isAuthorizedApp, saveStateAndNonce } from '../utils/oauth';
 import { generateClientId, generateClientSecret } from '../utils/utils';
 
 export const validateClientRegisterFields = [
