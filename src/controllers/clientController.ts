@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import prisma from '../config/prismaClient';
 import { check, validationResult } from 'express-validator';
 import { generateClientId, generateClientSecret } from '../utils/utils';
@@ -102,31 +102,24 @@ export const getClientDetailsByUser = async (
 ): Promise<unknown> => {
   try {
     const { clientId } = req.body;
-    if (!clientId)
-      return res.status(422).json({ message: 'Client Id is required.' });
-    const user: any = req.user;
+
     // fetch client data
     const client = await prisma.client.findUnique({
       where: {
         clientId: clientId
       },
       select: {
-        name:true,
-        redirectUri:true,
-        homePageUrl:true,
-        userId:true,
-        description:true,
-        createdAt:true,
-        id:true,
-        clientId:true,
-        authorizedApps:true
+        name: true,
+        redirectUri: true,
+        homePageUrl: true,
+        userId: true,
+        description: true,
+        createdAt: true,
+        id: true,
+        clientId: true,
+        authorizedApps: true
       }
     });
-    if (!client) return res.status(400).json({ message: 'Client Not Found!' });
-    else if (user.id != client.userId)
-      return res
-        .status(404)
-        .json({ message: 'You are not authorized for the client details!' });
     return res.status(200).json(client);
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
@@ -140,24 +133,6 @@ export const deleteClient = async (
 ): Promise<unknown> => {
   try {
     const { clientId } = req.body;
-    if (!clientId)
-      return res.status(422).json({ message: 'Client Id is required.' });
-    const user: any = req.user;
-    // fetch client data
-    const client = await prisma.client.findUnique({
-      where: {
-        clientId: clientId
-      }
-    });
-
-    if (!client) res.status(400).json({ message: 'Client not found.' });
-    else if (client && client.userId != user.id)
-      return res
-        .status(404)
-        .json({
-          message:
-            'You do not have the required permissions to delete the client.'
-        });
 
     //delete client
     const result = await prisma.client.delete({
@@ -165,7 +140,6 @@ export const deleteClient = async (
         clientId: clientId
       }
     });
-    if (!result) return res.status(400).json({ message: 'Client not found' });
     return res.status(200).json({ message: 'Client deleted successfully.' });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
@@ -179,26 +153,8 @@ export const updateClient = async (
 ): Promise<unknown> => {
   try {
     const { clientId, name, homePageUrl, callbackUrl, description } = req.body;
-    if (!clientId)
-      return res.status(422).json({ message: 'Client Id is required.' });
-    const user: any = req.user;
-    // fetch client data
-    const client = await prisma.client.findUnique({
-      where: {
-        clientId: clientId
-      }
-    });
 
-    if (!client) res.status(400).json({ message: 'Client not found.' });
-    if (client && client.userId != user.id)
-      return res
-        .status(404)
-        .json({
-          message:
-            'You do not have the required permissions to update the client.'
-        });
-
-    //delete client
+    //update client
     const result = await prisma.client.update({
       where: {
         clientId: clientId
@@ -210,7 +166,6 @@ export const updateClient = async (
         description: description
       }
     });
-    if (!result) return res.status(400).json({ message: 'Client not found' });
     return res.status(200).json({ message: 'Client updated successfully.' });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
@@ -218,31 +173,13 @@ export const updateClient = async (
 };
 
 //to generate client secret
-export const generateSecret = async (
+export const generateNewSecret = async (
   req: Request,
   res: Response
 ): Promise<unknown> => {
   try {
     const { clientId } = req.body;
     const newSecret = generateClientSecret();
-    if (!clientId)
-      return res.status(422).json({ message: 'Client Id is required.' });
-    const user: any = req.user;
-    // fetch client data
-    const client = await prisma.client.findUnique({
-      where: {
-        clientId: clientId
-      }
-    });
-
-    if (!client) res.status(400).json({ message: 'Client not found.' });
-    if (client && client.userId != user.id)
-      return res
-        .status(404)
-        .json({
-          message:
-            'You do not have the required permissions to generate the secret.'
-        });
 
     //update client secret
     const result = await prisma.client.update({
@@ -254,13 +191,42 @@ export const generateSecret = async (
       }
     });
     if (!result) return res.status(400).json({ message: 'Client not found' });
-    return res
-      .status(200)
-      .json({
-        message:
-          'Make sure you copy the client secret. It will not be visible again.',
-        secret: newSecret
+    return res.status(200).json({
+      message:
+        'Make sure you copy the client secret. It will not be visible again.',
+      secret: newSecret
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const isPermitted = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<unknown> => {
+  try {
+    const { clientId } = req.body;
+    if (!clientId)
+      return res.status(400).json({ message: 'Client Id is required.' });
+    const user: any = req.user;
+    // fetch client data
+    const client = await prisma.client.findUnique({
+      where: {
+        clientId: clientId
+      },
+      select: {
+        userId: true
+      }
+    });
+
+    if (!client) res.status(400).json({ message: 'Client not found.' });
+    if (client && client.userId != user.id)
+      return res.status(404).json({
+        message: 'You do not have the required permissions.'
       });
+    next();
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }
