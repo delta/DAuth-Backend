@@ -134,6 +134,23 @@ export const deleteClient = async (
   try {
     const { clientId } = req.body;
 
+    //delete token, authorised apps, codes before deleting client
+    await prisma.code.deleteMany({
+      where: {
+        clientId: clientId
+      }
+    });
+    await prisma.authorisedApps.deleteMany({
+      where: {
+        clientId: clientId
+      }
+    });
+    await prisma.token.deleteMany({
+      where: {
+        clientId: clientId
+      }
+    });
+
     //delete client
     const result = await prisma.client.delete({
       where: {
