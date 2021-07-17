@@ -133,32 +133,43 @@ export const deleteClient = async (
 ): Promise<unknown> => {
   try {
     const { clientId } = req.body;
-
-    //delete token, authorised apps, codes before deleting client
-    await prisma.code.deleteMany({
+    const client = await prisma.client.findUnique({
       where: {
-        clientId: clientId
-      }
-    });
-    await prisma.authorisedApps.deleteMany({
-      where: {
-        clientId: clientId
-      }
-    });
-    await prisma.token.deleteMany({
-      where: {
-        clientId: clientId
+        clientId: clientId as string
+      },
+      select: {
+        id: true
       }
     });
 
-    //delete client
-    const result = await prisma.client.delete({
-      where: {
-        clientId: clientId
-      }
-    });
-    return res.status(200).json({ message: 'Client deleted successfully.' });
+    if (client) {
+      //delete token, authorised apps, codes before deleting client
+      await prisma.code.deleteMany({
+        where: {
+          clientId: client.id
+        }
+      });
+      await prisma.authorisedApps.deleteMany({
+        where: {
+          clientId: client.id
+        }
+      });
+      await prisma.token.deleteMany({
+        where: {
+          clientId: client.id
+        }
+      });
+
+      //delete client
+      const result = await prisma.client.delete({
+        where: {
+          clientId: clientId
+        }
+      });
+      return res.status(200).json({ message: 'Client deleted successfully.' });
+    }
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
