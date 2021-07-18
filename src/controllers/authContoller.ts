@@ -19,20 +19,6 @@ export const validateRegisterFields = [
     .customSanitizer(removeWhiteSpaces)
     .custom(validatePhoneNumber)
     .withMessage('Invalid phone number'),
-  check('year')
-    .exists()
-    .trim()
-    .toInt()
-    .isAfter('1950')
-    .not()
-    .isEmpty()
-    .withMessage('Invalid batch details'),
-  check('department')
-    .exists()
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage('Department is required'),
   check('password')
     .exists()
     .trim()
@@ -218,28 +204,19 @@ export const register = async (
     }
   });
 
-  const { name, password, phoneNumber, year, department } = req.body;
+  const { name, password, phoneNumber } = req.body;
   try {
     // generate salt to hash password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
-    //check if department exists in db
-    const userDepartment = await prisma.department.findUnique({
-      where: {
-        department: department
-      }
-    });
-    if (!userDepartment)
-      return res.status(406).json({ message: 'The department is invalid.' });
+
     // create user
     await prisma.resourceOwner.create({
       data: {
         emailId: emailId,
         name: name,
         password: hashPassword,
-        phoneNumber: phoneNumber,
-        year: year,
-        department: department
+        phoneNumber: phoneNumber
       }
     });
     return res.status(200).json({ message: 'Registration successful' });
@@ -303,20 +280,4 @@ export const isNotAuthenticated = (
   if (req.isAuthenticated())
     return res.status(400).json({ message: 'User already authenticated' });
   next();
-};
-
-export const getDepartments = async (
-  req: Request,
-  res: Response
-): Promise<unknown> => {
-  try {
-    const departments = await prisma.department.findMany({
-      select: {
-        department: true
-      }
-    });
-    return res.status(200).json(departments);
-  } catch (error) {
-    return res.status(500).json({ message: 'Internal server error' });
-  }
 };

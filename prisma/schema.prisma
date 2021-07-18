@@ -27,8 +27,6 @@ model ResourceOwner {
   emailId        Int
   name           String
   phoneNumber    String
-  department     String
-  year           Int
   password       String
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -89,9 +87,4 @@ model AuthorisedApps {
   createdAt DateTime      @default(now())
 
   @@id([clientId, userId])
-}
-
-model Department{
-  id          Int           @id @default(autoincrement())
-  department  String        @unique
 }
