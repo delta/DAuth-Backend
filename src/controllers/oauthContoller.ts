@@ -24,7 +24,7 @@ export const handleAuthorize = async (req: Request, res: Response) => {
 
       const app = await prisma.client.findUnique({
         where: {
-          id: code.client.primaryKey
+          clientId: code.client.primaryKey
         },
         select: {
           name: true
@@ -119,18 +119,59 @@ export const getClaims = async (
 export const handleToken = (req: Request, res: Response) => {
   const { token } = res.locals.token;
   const code = res.locals.code;
-  const user = req.user;
+
   const response: any = {
     token_type: 'Bearer',
     access_token: token.accessToken,
     state: code?.state,
     expires_in: token.accessTokenExpiresAt.getTime()
   };
-  const idToken = generateIdToken(token.scope, user, code, token.client.id);
-  if (idToken) {
-    response.id_token = idToken;
+
+  if (res.locals.id_token) {
+    response.id_token = res.locals.id_token;
   }
+
   res.status(200).json(response);
+};
+
+export const getIdToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { token } = res.locals.token;
+  const code = res.locals.code;
+
+  res.locals.id_token = null;
+  try {
+    const userId = await prisma.token.findUnique({
+      where: {
+        accessToken: token.accessToken
+      },
+      select: {
+        userId: true
+      }
+    });
+    if (!userId) return next();
+
+    const user = await prisma.resourceOwner.findUnique({
+      where: {
+        id: userId.userId
+      },
+      include: {
+        email: true
+      }
+    });
+    res.locals.id_token = generateIdToken(
+      token.scope,
+      user,
+      code,
+      token.client.id
+    );
+    next();
+  } catch (error) {
+    next();
+  }
 };
 
 // middleware to check if user already authorized the client

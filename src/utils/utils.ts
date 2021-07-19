@@ -28,6 +28,8 @@ export const generateIdToken = (
   authCode: any,
   clientId: string
 ): string | null => {
+  if (!user) return null;
+
   const scopes = scope.split(' ');
   if (!scopes.includes('openid')) return null;
 
