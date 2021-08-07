@@ -5,7 +5,8 @@ import {
   validateClient,
   handleToken,
   getClaims,
-  isClientAuthorized
+  isClientAuthorized,
+  getIdToken
 } from '../controllers/oauthContoller';
 import oauth from '../oauth/index';
 
@@ -36,6 +37,6 @@ router.post(
 );
 
 // token route, should/will be a backchannel communication
-router.post('/token', getClaims, oauth.token(), handleToken);
+router.post('/token', getClaims, oauth.token(), getIdToken, handleToken);
 
 export default router;
