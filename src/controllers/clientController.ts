@@ -144,28 +144,29 @@ export const deleteClient = async (
 
     if (client) {
       //delete token, authorised apps, codes before deleting client
-      await Promise.all([
-        prisma.code.deleteMany({
-          where: {
-            clientId: client.id
-          }
-        }),
-        prisma.authorisedApps.deleteMany({
-          where: {
-            clientId: client.id
-          }
-        }),
-        prisma.authorisedApps.deleteMany({
-          where: {
-            clientId: client.id
-          }
-        }),
-        prisma.client.delete({
-          where: {
-            clientId: clientId
-          }
-        })
-      ])
+      const deleteCodes = prisma.code.deleteMany({
+        where: {
+          clientId: client.id
+        }
+      });
+      const deleteApps = prisma.authorisedApps.deleteMany({
+        where: {
+          clientId: client.id
+        }
+      });
+      const deleteTokens = prisma.authorisedApps.deleteMany({
+        where: {
+          clientId: client.id
+        }
+      });
+      const deleteClient = prisma.client.delete({
+        where: {
+          clientId: clientId
+        }
+      });
+
+      //either all are deleted together or the action fails.
+      await prisma.$transaction([deleteCodes, deleteTokens, deleteApps, deleteClient]);
 
       return res.status(200).json({ message: 'Client deleted successfully.' });
     }
