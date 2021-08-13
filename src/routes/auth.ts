@@ -1,7 +1,6 @@
 import express, { Router } from 'express';
 const router: Router = express.Router();
 import {
-  getDepartments,
   isAuth,
   isAuthenticated,
   isNotAuthenticated,
@@ -38,7 +37,5 @@ router.get('/email/verify/:id', verifyEmail);
 router.post('/register', validateRegisterFields, register);
 // login route
 router.post('/login', validateLoginFields, login);
-// get all departments
-router.get('/departments', getDepartments);
 
 export default router;

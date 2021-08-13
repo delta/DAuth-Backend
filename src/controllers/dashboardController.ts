@@ -15,8 +15,6 @@ export const userInfo = async (
       select: {
         name: true,
         phoneNumber: true,
-        department: true,
-        year: true,
         email: {
           select: {
             email: true
