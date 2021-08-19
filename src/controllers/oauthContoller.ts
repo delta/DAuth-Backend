@@ -9,7 +9,7 @@ export const validateAuthorizeRequest = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (req.headers['referer'] !== 'https://auth.delta.nitt.edu/') {
+  if (req.headers['referer'] !== process.env.FRONTEND_URL + '/') {
     return res.status(400).json({ message: 'Bad Request' });
   }
 
