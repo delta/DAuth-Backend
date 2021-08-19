@@ -166,7 +166,12 @@ export const deleteClient = async (
       });
 
       //either all are deleted together or the action fails.
-      await prisma.$transaction([deleteCodes, deleteTokens, deleteApps, deleteClient]);
+      await prisma.$transaction([
+        deleteCodes,
+        deleteTokens,
+        deleteApps,
+        deleteClient
+      ]);
 
       return res.status(200).json({ message: 'Client deleted successfully.' });
     }

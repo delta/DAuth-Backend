@@ -111,7 +111,8 @@ export const sendNewAppMail = (
   const linkText = 'dashboard';
   const link = `${process.env.FRONTEND_URL}/dashboard`;
   const mailContent = getMailContent(name, link, content, linkText);
-  return sendMail(email, subject, mailContent);
+
+  sendMail(email, subject, mailContent);
 };
 
 export const sendMail = (
