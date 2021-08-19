@@ -6,7 +6,8 @@ import {
   handleToken,
   getClaims,
   isClientAuthorized,
-  getIdToken
+  getIdToken,
+  validateAuthorizeRequest
 } from '../controllers/oauthContoller';
 import oauth from '../oauth/index';
 
@@ -25,6 +26,7 @@ router.get('/authorize', isAuthenticated, validateClient, isClientAuthorized);
 // 'false' === req.query.allowed, for user who denied access to application
 router.post(
   '/authorize',
+  validateAuthorizeRequest,
   isAuthenticated,
   oauth.authorize({
     authenticateHandler: {

@@ -4,6 +4,18 @@ import { sendNewAppMail } from '../utils/mail';
 import { isAuthorizedApp, saveStateAndNonce } from '../utils/oauth';
 import { generateIdToken } from '../utils/utils';
 
+export const validateAuthorizeRequest = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.headers['referer'] !== 'https://auth.delta.nitt.edu/') {
+    return res.status(400).json({ message: 'Bad Request' });
+  }
+
+  next();
+};
+
 // authorization handler, redirects to client redirecturi with code and state query params
 export const handleAuthorize = async (req: Request, res: Response) => {
   const { code } = res.locals.code;
@@ -24,14 +36,14 @@ export const handleAuthorize = async (req: Request, res: Response) => {
 
       const app = await prisma.client.findUnique({
         where: {
-          clientId: code.client.primaryKey
+          id: code.client.primaryKey
         },
         select: {
           name: true
         }
       });
 
-      await sendNewAppMail(user.email.email, user.name, app?.name || ' ');
+      sendNewAppMail(user.email.email, user.name, app?.name || ' ');
     }
     // saving nonce and state with code
     // state will be send back with code and accesstoken response

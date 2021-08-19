@@ -10,3 +10,5 @@
 .husky
 build
 README.md
+**/redis-volume
+**/mysql-volume
