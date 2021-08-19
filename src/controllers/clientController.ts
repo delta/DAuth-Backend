@@ -13,14 +13,14 @@ export const validateClientRegisterFields = [
   check('homepageUrl')
     .exists()
     .trim()
-    .isURL()
+    .isURL({ require_tld: false })
     .not()
     .isEmpty()
     .withMessage('Valid home page URL is required.'),
   check('callbackUrl')
     .exists()
     .trim()
-    .isURL()
+    .isURL({ require_tld: false })
     .not()
     .isEmpty()
     .withMessage('Valid callback URL is required.'),
