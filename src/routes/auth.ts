@@ -11,9 +11,12 @@ import {
   validateLoginFields,
   validateRegisterFields,
   validateStartFields,
-  verifyEmail
+  validatePasswordFields,
+  verifyEmail,
+  checkUserExsits,
+  resetPassword
 } from '../controllers/authContoller';
-import { sendVerifyMail } from '../controllers/mailController';
+import { sendVerifyMail, sendForgotPasswordMail } from '../controllers/mailController';
 
 /**
 registration flow :
@@ -37,5 +40,9 @@ router.get('/email/verify/:id', verifyEmail);
 router.post('/register', validateRegisterFields, register);
 // login route
 router.post('/login', validateLoginFields, login);
+// forgot password route
+router.post('/forgotPassword', validateStartFields, checkUserExsits, sendForgotPasswordMail);
+// reset password route
+router.post('/resetPassword', validatePasswordFields, resetPassword);
 
 export default router;

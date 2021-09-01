@@ -66,3 +66,16 @@ export const generateClientId = (): string => {
 export const generateClientSecret = (): string => {
   return cryptoRandomString({ length: 32, type: 'url-safe' });
 };
+
+export const generateForgotPasswordToken = (
+  _email: string,
+  _id:  number
+): string => {
+  const tokenObject = {
+    email: _email,
+    id: _id,
+    created_at: new Date()
+  }
+  const token = JWT.sign(tokenObject, process.env.TOKEN_KEY as string);
+  return token;
+}

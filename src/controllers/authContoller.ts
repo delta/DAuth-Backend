@@ -1,15 +1,18 @@
 import { NextFunction, Request, Response } from 'express';
 import { check, validationResult } from 'express-validator';
-import bcrypt from 'bcrypt';
+import bcrypt, { hash } from 'bcrypt';
 import prisma from '../config/prismaClient';
+import {JWT} from 'jose';
 import {
   expireDate,
   generateActivationCode,
   removeWhiteSpaces,
-  validatePhoneNumber
+  validatePhoneNumber,
+  generateForgotPasswordToken
 } from '../utils/utils';
 import passport from 'passport';
 import { ResourceOwner } from '.prisma/client';
+import { env } from 'process';
 
 export const validateRegisterFields = [
   check('name').exists().trim().not().isEmpty().withMessage('Name is required'),
@@ -51,6 +54,31 @@ export const validateStartFields = [
     .isEmpty()
     .isEmail()
     .withMessage('Invalid email address')
+];
+
+export const validatePasswordFields = [
+  check('token')
+    .exists()
+    .not()
+    .isEmpty()
+    .withMessage('Token is empty'),
+  check('email')
+    .exists()
+    .normalizeEmail()
+    .contains('@nitt.edu')
+    .not()
+    .isEmpty()
+    .isEmail()
+    .withMessage('Invalid email address'),
+  check('password')
+    .exists()
+    .trim()
+    .isLength({ min: 6 })
+    .withMessage('Password should be atleast 6 characters'),
+  check('repeatPassword', 'Passwords do not match')
+    .exists()
+    .trim()
+    .custom((value, { req }) => value === req.body.password)
 ];
 
 export const start = async (
@@ -281,3 +309,93 @@ export const isNotAuthenticated = (
     return res.status(400).json({ message: 'User already authenticated' });
   next();
 };
+
+export const checkUserExsits = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty())
+    return res.status(400).json({ errors: errors.array() });
+  try{
+    const user = await prisma.email.findUnique({
+      where: {
+        email: req.body.email
+      },
+      select: {
+        ResourceOwner: true,
+        isActivated: true
+      }
+    });
+    
+    if(user == null || user?.ResourceOwner == null){
+      return res.status(400).json({ message: 'User doesn\'t exist' });
+    }else if(!user.isActivated){
+      return res.status(400).json({ message: 'Email address of the user wasn\'t activated yet!' });
+    }
+    const token = generateForgotPasswordToken(req.body.email, user.ResourceOwner.id);
+    const createdAt = new Date();
+    await prisma.token.create({
+      data: {
+        accessToken: token,
+        createdAt: createdAt,
+        scope: 'passwordReset',
+        userId: user.ResourceOwner.id,
+        expireAt: createdAt, //change later
+        clientId: 1 //rand - check later
+      }
+    });
+    res.locals.token = token;
+    next();
+  }catch(error){
+    console.log(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+export const resetPassword = async(
+  req: Request,
+  res: Response
+): Promise<unknown> => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty())
+    return res.status(400).json({ errors: errors.array() });
+  const token = req.body.token;
+  const tokenObject = JWT.decode(token, {complete: true});
+  try{
+    const tokenDB = await prisma.token.findUnique({
+      where: {
+        accessToken: token
+      }
+    });
+    const exp = tokenDB?.createdAt;
+    exp?.setMinutes(exp.getMinutes() + 5);
+    if((exp && exp < new Date()) || tokenDB?.userId != (tokenObject.payload as any).id){
+      await prisma.token.delete({
+        where: {
+          accessToken: token
+        }
+      });
+      return res.status(400).json({message: 'Password reset link has been expired or is invalid. Make a new password reset request!'})
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(req.body.password, salt);
+    await prisma.resourceOwner.update({
+      where: {
+        id: (tokenObject.payload as any).id
+      },
+      data: {
+        password: hashPassword
+      }
+    });
+    await prisma.token.delete({
+      where: {
+        accessToken: token
+      }
+    });
+    return res.status(200).json({ message: 'Password reset successful. Login with new password!' });
+  }catch(error){
+    return res.status(500).json({ message: 'The password reset link has been used already! Make a new request' });
+  }
+}
