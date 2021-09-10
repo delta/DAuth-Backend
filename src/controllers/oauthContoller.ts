@@ -59,7 +59,6 @@ export const handleAuthorize = async (req: Request, res: Response) => {
     // redirecting to client app with auth code and state as query params
     return res.status(302).redirect(location);
   } catch (error) {
-
     return res.status(500).json({ message: 'Internal server error' });
   }
 };

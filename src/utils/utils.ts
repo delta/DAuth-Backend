@@ -69,13 +69,19 @@ export const generateClientSecret = (): string => {
 
 export const generateForgotPasswordToken = (
   _email: string,
-  _id:  number
+  _id: number,
+  _hash: string
 ): string => {
-  const tokenObject = {
+  const payload = {
     email: _email,
-    id: _id,
-    created_at: new Date()
-  }
-  const token = JWT.sign(tokenObject, process.env.TOKEN_KEY as string);
+    id: _id
+  };
+  const token = JWT.sign(payload, _hash, {
+    issuer: process.env.FRONTEND_URL,
+    expiresIn: '5 m', // 5 minutes
+    header: {
+      typ: 'JWT'
+    }
+  });
   return token;
-}
+};

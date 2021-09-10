@@ -16,7 +16,10 @@ import {
   checkUserExsits,
   resetPassword
 } from '../controllers/authContoller';
-import { sendVerifyMail, sendForgotPasswordMail } from '../controllers/mailController';
+import {
+  sendVerifyMail,
+  sendForgotPasswordMail
+} from '../controllers/mailController';
 
 /**
 registration flow :

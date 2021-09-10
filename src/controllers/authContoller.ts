@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { check, validationResult } from 'express-validator';
 import bcrypt, { hash } from 'bcrypt';
 import prisma from '../config/prismaClient';
-import {JWT} from 'jose';
+import { JWT } from 'jose';
 import {
   expireDate,
   generateActivationCode,
@@ -12,7 +12,6 @@ import {
 } from '../utils/utils';
 import passport from 'passport';
 import { ResourceOwner } from '.prisma/client';
-import { env } from 'process';
 
 export const validateRegisterFields = [
   check('name').exists().trim().not().isEmpty().withMessage('Name is required'),
@@ -57,11 +56,7 @@ export const validateStartFields = [
 ];
 
 export const validatePasswordFields = [
-  check('token')
-    .exists()
-    .not()
-    .isEmpty()
-    .withMessage('Token is empty'),
+  check('token').exists().not().isEmpty().withMessage('Token is empty'),
   check('email')
     .exists()
     .normalizeEmail()
@@ -318,7 +313,7 @@ export const checkUserExsits = async (
   const errors = validationResult(req);
   if (!errors.isEmpty())
     return res.status(400).json({ errors: errors.array() });
-  try{
+  try {
     const user = await prisma.email.findUnique({
       where: {
         email: req.body.email
@@ -328,33 +323,28 @@ export const checkUserExsits = async (
         isActivated: true
       }
     });
-    
-    if(user == null || user?.ResourceOwner == null){
-      return res.status(400).json({ message: 'User doesn\'t exist' });
-    }else if(!user.isActivated){
-      return res.status(400).json({ message: 'Email address of the user wasn\'t activated yet!' });
+
+    if (user == null || user?.ResourceOwner == null) {
+      return res.status(400).json({ message: "User doesn't exist" });
+    } else if (!user.isActivated) {
+      return res
+        .status(400)
+        .json({ message: "Email address of the user wasn't activated yet!" });
     }
-    const token = generateForgotPasswordToken(req.body.email, user.ResourceOwner.id);
-    const createdAt = new Date();
-    await prisma.token.create({
-      data: {
-        accessToken: token,
-        createdAt: createdAt,
-        scope: 'passwordReset',
-        userId: user.ResourceOwner.id,
-        expireAt: createdAt, //change later
-        clientId: 1 //rand - check later
-      }
-    });
+    const token = generateForgotPasswordToken(
+      req.body.email,
+      user.ResourceOwner.id,
+      user.ResourceOwner.password
+    );
     res.locals.token = token;
     next();
-  }catch(error){
+  } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
-}
+};
 
-export const resetPassword = async(
+export const resetPassword = async (
   req: Request,
   res: Response
 ): Promise<unknown> => {
@@ -362,40 +352,44 @@ export const resetPassword = async(
   if (!errors.isEmpty())
     return res.status(400).json({ errors: errors.array() });
   const token = req.body.token;
-  const tokenObject = JWT.decode(token, {complete: true});
-  try{
-    const tokenDB = await prisma.token.findUnique({
+  const email = req.body.email;
+  try {
+    const user = await prisma.email.findUnique({
       where: {
-        accessToken: token
+        email: email
+      },
+      select: {
+        ResourceOwner: true,
+        isActivated: true
       }
     });
-    const exp = tokenDB?.createdAt;
-    exp?.setMinutes(exp.getMinutes() + 5);
-    if((exp && exp < new Date()) || tokenDB?.userId != (tokenObject.payload as any).id){
-      await prisma.token.delete({
-        where: {
-          accessToken: token
-        }
-      });
-      return res.status(400).json({message: 'Password reset link has been expired or is invalid. Make a new password reset request!'})
+    if (user == null || user?.ResourceOwner == null) {
+      return res.status(400).json({ message: "User doesn't exist" });
+    } else if (!user.isActivated) {
+      return res
+        .status(400)
+        .json({ message: "Email address of the user wasn't activated yet!" });
     }
+    const payload  = await JWT.verify(token, user.ResourceOwner.password, {
+      issuer: process.env.FRONTEND_URL
+    });
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(req.body.password, salt);
     await prisma.resourceOwner.update({
       where: {
-        id: (tokenObject.payload as any).id
+        id: (payload as any).id
       },
       data: {
         password: hashPassword
       }
     });
-    await prisma.token.delete({
-      where: {
-        accessToken: token
-      }
+    return res
+      .status(200)
+      .json({ message: 'Password reset successful. Login with new password!' });
+  } catch (error) {
+    return res.status(500).json({
+      message:
+        'The password reset link has been expired or is invalid. Please try making a new request!'
     });
-    return res.status(200).json({ message: 'Password reset successful. Login with new password!' });
-  }catch(error){
-    return res.status(500).json({ message: 'The password reset link has been used already! Make a new request' });
   }
-}
+};
