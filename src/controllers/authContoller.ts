@@ -1,12 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import { check, validationResult } from 'express-validator';
-import bcrypt from 'bcrypt';
+import bcrypt, { hash } from 'bcrypt';
 import prisma from '../config/prismaClient';
+import { JWT } from 'jose';
 import {
   expireDate,
   generateActivationCode,
   removeWhiteSpaces,
-  validatePhoneNumber
+  validatePhoneNumber,
+  generateForgotPasswordToken
 } from '../utils/utils';
 import passport from 'passport';
 import { ResourceOwner } from '.prisma/client';
@@ -51,6 +53,27 @@ export const validateStartFields = [
     .isEmpty()
     .isEmail()
     .withMessage('Invalid email address')
+];
+
+export const validatePasswordFields = [
+  check('token').exists().not().isEmpty().withMessage('Token is empty'),
+  check('email')
+    .exists()
+    .normalizeEmail()
+    .contains('@nitt.edu')
+    .not()
+    .isEmpty()
+    .isEmail()
+    .withMessage('Invalid email address'),
+  check('password')
+    .exists()
+    .trim()
+    .isLength({ min: 6 })
+    .withMessage('Password should be atleast 6 characters'),
+  check('repeatPassword', 'Passwords do not match')
+    .exists()
+    .trim()
+    .custom((value, { req }) => value === req.body.password)
 ];
 
 export const start = async (
@@ -280,4 +303,92 @@ export const isNotAuthenticated = (
   if (req.isAuthenticated())
     return res.status(400).json({ message: 'User already authenticated' });
   next();
+};
+
+export const checkUserExsits = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty())
+    return res.status(400).json({ errors: errors.array() });
+  try {
+    const user = await prisma.email.findUnique({
+      where: {
+        email: req.body.email
+      },
+      select: {
+        ResourceOwner: true,
+        isActivated: true
+      }
+    });
+
+    if (user == null || user?.ResourceOwner == null) {
+      return res.status(400).json({ message: "User doesn't exist" });
+    } else if (!user.isActivated) {
+      return res
+        .status(400)
+        .json({ message: "Email address of the user wasn't activated yet!" });
+    }
+    const token = generateForgotPasswordToken(
+      req.body.email,
+      user.ResourceOwner.id,
+      user.ResourceOwner.password
+    );
+    res.locals.token = token;
+    next();
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response
+): Promise<unknown> => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty())
+    return res.status(400).json({ errors: errors.array() });
+  const token = req.body.token;
+  const email = req.body.email;
+  try {
+    const user = await prisma.email.findUnique({
+      where: {
+        email: email
+      },
+      select: {
+        ResourceOwner: true,
+        isActivated: true
+      }
+    });
+    if (user == null || user?.ResourceOwner == null) {
+      return res.status(400).json({ message: "User doesn't exist" });
+    } else if (!user.isActivated) {
+      return res
+        .status(400)
+        .json({ message: "Email address of the user wasn't activated yet!" });
+    }
+    const payload  = await JWT.verify(token, user.ResourceOwner.password, {
+      issuer: process.env.FRONTEND_URL
+    });
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(req.body.password, salt);
+    await prisma.resourceOwner.update({
+      where: {
+        id: (payload as any).id
+      },
+      data: {
+        password: hashPassword
+      }
+    });
+    return res
+      .status(200)
+      .json({ message: 'Password reset successful. Login with new password!' });
+  } catch (error) {
+    return res.status(500).json({
+      message:
+        'The password reset link has been expired or is invalid. Please try making a new request!'
+    });
+  }
 };
