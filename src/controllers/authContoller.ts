@@ -339,7 +339,6 @@ export const checkUserExsits = async (
     res.locals.token = token;
     next();
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };

@@ -24,7 +24,6 @@ export const sendForgotPasswordMail = async (req: Request, res: Response) => {
     "We have received a password reset request for your account. Kindly click the link below to proceed. If this isn't you, try changing your password or send an alert mail to delta@nitt.edu.";
   const email: string = req.body.email;
   const name = email.slice(0, -9);
-  //const token = generateForgotPasswordToken(email)
   const token = res.locals.token;
   const link = `${process.env.FRONTEND_URL}/resetPassword?token=${token}&webmailId=${email}`;
   const linkText = 'Password reset link';
