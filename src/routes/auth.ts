@@ -44,7 +44,12 @@ router.post('/register', validateRegisterFields, register);
 // login route
 router.post('/login', validateLoginFields, login);
 // forgot password route
-router.post('/forgotPassword', validateStartFields, checkUserExsits, sendForgotPasswordMail);
+router.post(
+  '/forgotPassword',
+  validateStartFields,
+  checkUserExsits,
+  sendForgotPasswordMail
+);
 // reset password route
 router.post('/resetPassword', validatePasswordFields, resetPassword);
 

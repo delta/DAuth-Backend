@@ -369,7 +369,7 @@ export const resetPassword = async (
         .status(400)
         .json({ message: "Email address of the user wasn't activated yet!" });
     }
-    const payload  = await JWT.verify(token, user.ResourceOwner.password, {
+    const payload = await JWT.verify(token, user.ResourceOwner.password, {
       issuer: process.env.FRONTEND_URL
     });
     const salt = await bcrypt.genSalt(10);
