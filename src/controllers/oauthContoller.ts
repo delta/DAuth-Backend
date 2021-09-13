@@ -1,18 +1,24 @@
 import { NextFunction, Request, Response } from 'express';
+import { URL } from 'url';
 import prisma from '../config/prismaClient';
 import { sendNewAppMail } from '../utils/mail';
 import { isAuthorizedApp, saveStateAndNonce } from '../utils/oauth';
 import { generateIdToken } from '../utils/utils';
+
+const isProd = process.env.NODE_ENV === 'production';
 
 export const validateAuthorizeRequest = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  if (req.headers['referer'] !== process.env.FRONTEND_URL + '/') {
-    return res.status(400).json({ message: 'Bad Request' });
+  if (isProd) {
+    const url: string = req.headers['referer'] as string;
+    const { hostname } = new URL(url);
+    if (hostname != process.env.DOMAIN) {
+      return res.status(400).json({ message: 'Bad request' });
+    }
   }
-
   next();
 };
 
