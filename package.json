@@ -8,6 +8,7 @@
     "build": "rm -rf ./build && tsc",
     "start": "npm run build && node build/index.js",
     "lint": "eslint . --ext .ts --fix",
+    "lint:github": "eslint . --ext .ts",
     "format": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "prepare": "husky install",
     "session:debug": "DEBUG=express-session npm run dev"
