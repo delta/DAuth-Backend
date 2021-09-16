@@ -1,0 +1,33 @@
+name: Migrate and Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: dauth
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-retries=3 --health-timeout=5s
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          cache: "npm"
+      - name: Install Dependencies
+        run: npm --production=false ci
+      - name: Set env files
+        run: cp .env.test .env
+      - name: Run Migrations
+        run: npm i -g prisma && prisma migrate dev
+      - name: Run Build
+        run: npm run build
