@@ -8,6 +8,7 @@ import {
   generateActivationCode,
   removeWhiteSpaces,
   validatePhoneNumber,
+  validateGender,
   generateForgotPasswordToken
 } from '../utils/utils';
 import passport from 'passport';
@@ -21,6 +22,11 @@ export const validateRegisterFields = [
     .customSanitizer(removeWhiteSpaces)
     .custom(validatePhoneNumber)
     .withMessage('Invalid phone number'),
+  check('gender')
+    .exists()
+    .trim()
+    .custom(validateGender)
+    .withMessage('Invalid details'),
   check('password')
     .exists()
     .trim()
@@ -74,6 +80,21 @@ export const validatePasswordFields = [
     .exists()
     .trim()
     .custom((value, { req }) => value === req.body.password)
+];
+
+export const validateProfileUpdateFields = [
+  check('name').exists().trim().not().isEmpty().withMessage('Name is required'),
+  check('phoneNumber')
+    .exists()
+    .trim()
+    .customSanitizer(removeWhiteSpaces)
+    .custom(validatePhoneNumber)
+    .withMessage('Invalid phone number'),
+  check('gender')
+    .exists()
+    .trim()
+    .custom(validateGender)
+    .withMessage('Invalid details')
 ];
 
 export const start = async (
@@ -227,7 +248,7 @@ export const register = async (
     }
   });
 
-  const { name, password, phoneNumber } = req.body;
+  const { name, password, phoneNumber, gender } = req.body;
   try {
     // generate salt to hash password
     const salt = await bcrypt.genSalt(10);
@@ -239,7 +260,8 @@ export const register = async (
         emailId: emailId,
         name: name,
         password: hashPassword,
-        phoneNumber: phoneNumber
+        phoneNumber: phoneNumber,
+        gender: gender
       }
     });
     return res.status(200).json({ message: 'Registration successful' });
@@ -390,5 +412,35 @@ export const resetPassword = async (
       message:
         'The password reset link has been expired or is invalid. Please try making a new request!'
     });
+  }
+};
+
+export const updateProfile = async (
+  req: Request,
+  res: Response
+): Promise<unknown> => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { name, phoneNumber, gender } = req.body;
+  const user: any = req.user;
+  try {
+
+    // create user
+    await prisma.resourceOwner.update({
+      where:{
+        id: user.id
+      },
+      data: {
+        name: name,
+        phoneNumber: phoneNumber,
+        gender: gender
+      }
+    });
+    return res.status(200).json({ message: 'Successfully updated the details!' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
