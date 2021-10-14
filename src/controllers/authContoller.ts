@@ -427,10 +427,9 @@ export const updateProfile = async (
   const { name, phoneNumber, gender } = req.body;
   const user: any = req.user;
   try {
-
     // create user
     await prisma.resourceOwner.update({
-      where:{
+      where: {
         id: user.id
       },
       data: {
@@ -439,7 +438,9 @@ export const updateProfile = async (
         gender: gender
       }
     });
-    return res.status(200).json({ message: 'Successfully updated the details!' });
+    return res
+      .status(200)
+      .json({ message: 'Successfully updated the details!' });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }

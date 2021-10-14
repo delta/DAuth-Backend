@@ -36,7 +36,12 @@ router.get('/is-auth', isAuthenticated, isAuth);
 // logout route
 router.post('/logout', isAuthenticated, logout);
 //edit profile route
-router.post('/editProfile', validateProfileUpdateFields, isAuthenticated, updateProfile);
+router.post(
+  '/editProfile',
+  validateProfileUpdateFields,
+  isAuthenticated,
+  updateProfile
+);
 
 router.use(isNotAuthenticated);
 // register session start route

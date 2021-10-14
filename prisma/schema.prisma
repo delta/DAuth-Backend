@@ -27,7 +27,7 @@ model ResourceOwner {
   emailId        Int
   name           String
   phoneNumber    String
-  gender         Gender           @default(NONE)
+  gender         Gender           @default(MALE)
   password       String
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -91,7 +91,6 @@ model AuthorisedApps {
 }
 
 enum Gender{
-  NONE
   MALE
   FEMALE
 }

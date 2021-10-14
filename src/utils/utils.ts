@@ -18,11 +18,11 @@ export const validatePhoneNumber = (value: string): boolean => {
 };
 
 export const validateGender = (value: string): boolean => {
-  if(value == "MALE" || value == "FEMALE"){
+  if (value == 'MALE' || value == 'FEMALE') {
     return true;
   }
   return false;
-}
+};
 
 export const removeWhiteSpaces = (value: string): string => {
   return value.replace(/\s+/g, '');
