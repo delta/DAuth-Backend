@@ -17,6 +17,13 @@ export const validatePhoneNumber = (value: string): boolean => {
   return isValidPhoneNumber(value);
 };
 
+export const validateGender = (value: string): boolean => {
+  if (value == 'MALE' || value == 'FEMALE') {
+    return true;
+  }
+  return false;
+};
+
 export const removeWhiteSpaces = (value: string): string => {
   return value.replace(/\s+/g, '');
 };

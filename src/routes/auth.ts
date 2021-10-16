@@ -12,9 +12,11 @@ import {
   validateRegisterFields,
   validateStartFields,
   validatePasswordFields,
+  validateProfileUpdateFields,
   verifyEmail,
   checkUserExsits,
-  resetPassword
+  resetPassword,
+  updateProfile
 } from '../controllers/authContoller';
 import {
   sendVerifyMail,
@@ -33,6 +35,13 @@ registration flow :
 router.get('/is-auth', isAuthenticated, isAuth);
 // logout route
 router.post('/logout', isAuthenticated, logout);
+//edit profile route
+router.post(
+  '/editProfile',
+  validateProfileUpdateFields,
+  isAuthenticated,
+  updateProfile
+);
 
 router.use(isNotAuthenticated);
 // register session start route
