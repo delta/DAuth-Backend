@@ -55,18 +55,19 @@ model Client {
 }
 
 model Code {
-  id          Int           @id @default(autoincrement())
-  code        String        @unique
-  scope       String?
-  state       String?
-  redirectUri String
-  nonce       String?
-  user        ResourceOwner @relation(fields: [userId], references: [id])
-  userId      Int
-  client      Client        @relation(fields: [clientId], references: [id])
-  clientId    Int
-  createdAt   DateTime      @default(now())
-  expireAt    DateTime
+  id                        Int           @id @default(autoincrement())
+  code                      String        @unique
+  scope                     String?
+  state                     String?
+  redirectUri               String
+  nonce                     String?
+  user                      ResourceOwner @relation(fields: [userId], references: [id])
+  userId                    Int
+  client                    Client        @relation(fields: [clientId], references: [id])
+  clientId                  Int
+  codeChallenge             Codechallenge[]
+  createdAt                 DateTime      @default(now())
+  expireAt                  DateTime
 }
 
 model Token {
@@ -93,4 +94,14 @@ model AuthorisedApps {
 enum Gender{
   MALE
   FEMALE
+}
+
+model Codechallenge {
+  id                        Int           @id @default(autoincrement())
+  codeChallenge             String        @unique
+  codeChallengeMethod       String
+  code                      Code          @relation(fields: [codeId], references: [id])
+  codeId                    Int
+  createdAt                 DateTime      @default(now())
+  expireAt                  DateTime
 }

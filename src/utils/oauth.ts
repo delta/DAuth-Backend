@@ -3,6 +3,7 @@ import { ResourceOwner } from '@prisma/client';
 import OAuth2Server from 'oauth2-server';
 import { URL } from 'url';
 import prisma from '../config/prismaClient';
+import crypto from 'crypto';
 
 export const getOAuth2Client = (client: {
   clientId: string;
@@ -63,10 +64,13 @@ export const buildUrl = (uri: string, searchparams: any) => {
 
 export const saveStateAndNonce = async (
   code: string,
-  state: string,
-  nonce: string
+  data: any
 ): Promise<boolean> => {
   try {
+    const state = data.state;
+    const nonce = data.nonce;
+    const codeChallenge = data.code_challenge;
+    const codeChallengeMethod = data.code_challenge_method;
     await prisma.code.update({
       where: {
         code: code
@@ -74,6 +78,26 @@ export const saveStateAndNonce = async (
       data: {
         nonce: nonce,
         state: state
+      }
+    });
+    if (codeChallenge) {
+      const codeId = await prisma.code.findUnique({
+        where: {
+          code: code
+        }
+      });
+      await prisma.codechallenge.create({
+        data: {
+          codeChallenge: codeChallenge as string,
+          codeChallengeMethod: codeChallengeMethod as string,
+          codeId: (codeId as any).id,
+          expireAt: new Date(Date.now() + 36000000)
+        }
+      });
+    }
+    const codeObject = await prisma.code.findUnique({
+      where: {
+        code: code
       }
     });
     return true;
@@ -97,7 +121,50 @@ export const isAuthorizedApp = async (
     });
     if (!app) return false;
     return true;
-  } catch (error) {
+  } catch (error: any) {
+    throw new Error(error);
+  }
+};
+
+export const verifyCodeChallenge = async (
+  code: string,
+  codeVerifier: string
+): Promise<boolean> => {
+  try {
+    const codeData = await prisma.code.findUnique({
+      where: {
+        code: code
+      },
+      select: {
+        codeChallenge: true
+      }
+    });
+    if (!codeData) return false;
+    if (codeData.codeChallenge[0].codeChallengeMethod === 'plain') {
+      if (codeData.codeChallenge[0].codeChallenge == codeVerifier.toString()) {
+        await prisma.codechallenge.deleteMany({
+          where: {
+            codeChallenge: codeData.codeChallenge[0].codeChallenge as string
+          }
+        });
+        return true;
+      }
+    } else if (codeData.codeChallenge[0].codeChallengeMethod === 'S256') {
+      const hashedCodeVerifier = await crypto
+        .createHash('sha256')
+        .update(codeVerifier)
+        .digest('hex');
+      if (codeData.codeChallenge[0].codeChallenge == hashedCodeVerifier) {
+        await prisma.codechallenge.deleteMany({
+          where: {
+            codeChallenge: codeData.codeChallenge[0].codeChallenge as string
+          }
+        });
+        return true;
+      }
+    }
+    return false;
+  } catch (error: any) {
     throw new Error(error);
   }
 };

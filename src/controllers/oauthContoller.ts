@@ -2,7 +2,11 @@ import { NextFunction, Request, Response } from 'express';
 import { URL } from 'url';
 import prisma from '../config/prismaClient';
 import { sendNewAppMail } from '../utils/mail';
-import { isAuthorizedApp, saveStateAndNonce } from '../utils/oauth';
+import {
+  isAuthorizedApp,
+  saveStateAndNonce,
+  verifyCodeChallenge
+} from '../utils/oauth';
 import { generateIdToken } from '../utils/utils';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -54,11 +58,7 @@ export const handleAuthorize = async (req: Request, res: Response) => {
     // saving nonce and state with code
     // state will be send back with code and accesstoken response
     // nonce will be part of id token (jwt) claims
-    const isUpdated = await saveStateAndNonce(
-      code.authorizationCode,
-      req.body.state,
-      req.body.nonce
-    );
+    const isUpdated = await saveStateAndNonce(code.authorizationCode, req.body);
 
     if (!isUpdated)
       return res.status(500).json({ message: 'Internal server error' });
@@ -113,6 +113,25 @@ export const getClaims = async (
     return;
   }
   try {
+    const codeData = await prisma.code.findUnique({
+      where: {
+        code: code
+      },
+      select: {
+        codeChallenge: true
+      }
+    });
+    if (codeData?.codeChallenge.length) {
+      const isVerified = await verifyCodeChallenge(
+        code,
+        req.body.code_verifier
+      );
+      if (!isVerified) {
+        return res
+          .status(400)
+          .json({ message: 'code verification failed for code challenge.' });
+      }
+    }
     const authCode = await prisma.code.findUnique({
       where: {
         code: code
