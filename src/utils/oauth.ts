@@ -95,13 +95,9 @@ export const saveStateAndNonce = async (
         }
       });
     }
-    const codeObject = await prisma.code.findUnique({
-      where: {
-        code: code
-      }
-    });
     return true;
   } catch (error) {
+    console.log(error);
     return false;
   }
 };
@@ -131,7 +127,7 @@ export const verifyCodeChallenge = async (
   codeVerifier: string
 ): Promise<boolean> => {
   try {
-    const codeData = await prisma.code.findUnique({
+    const codeData: any = await prisma.code.findUnique({
       where: {
         code: code
       },
@@ -140,24 +136,24 @@ export const verifyCodeChallenge = async (
       }
     });
     if (!codeData) return false;
-    if (codeData.codeChallenge[0].codeChallengeMethod === 'plain') {
-      if (codeData.codeChallenge[0].codeChallenge == codeVerifier.toString()) {
-        await prisma.codechallenge.deleteMany({
+    if (codeData.codeChallenge.codeChallengeMethod === 'plain') {
+      if (codeData.codeChallenge.codeChallenge == codeVerifier.toString()) {
+        await prisma.codechallenge.delete({
           where: {
-            codeChallenge: codeData.codeChallenge[0].codeChallenge as string
+            codeChallenge: codeData.codeChallenge.codeChallenge as string
           }
         });
         return true;
       }
-    } else if (codeData.codeChallenge[0].codeChallengeMethod === 'S256') {
+    } else if (codeData.codeChallenge.codeChallengeMethod === 'S256') {
       const hashedCodeVerifier = await crypto
         .createHash('sha256')
         .update(codeVerifier)
         .digest('hex');
-      if (codeData.codeChallenge[0].codeChallenge == hashedCodeVerifier) {
-        await prisma.codechallenge.deleteMany({
+      if (codeData.codeChallenge.codeChallenge == hashedCodeVerifier) {
+        await prisma.codechallenge.delete({
           where: {
-            codeChallenge: codeData.codeChallenge[0].codeChallenge as string
+            codeChallenge: codeData.codeChallenge.codeChallenge as string
           }
         });
         return true;

@@ -65,7 +65,7 @@ model Code {
   userId                    Int
   client                    Client        @relation(fields: [clientId], references: [id])
   clientId                  Int
-  codeChallenge             Codechallenge[]
+  codeChallenge             Codechallenge?
   createdAt                 DateTime      @default(now())
   expireAt                  DateTime
 }

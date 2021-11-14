@@ -8,6 +8,7 @@ CREATE TABLE `Codechallenge` (
     `expireAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `Codechallenge.codeChallenge_unique`(`codeChallenge`),
+    UNIQUE INDEX `Codechallenge_codeId_unique`(`codeId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

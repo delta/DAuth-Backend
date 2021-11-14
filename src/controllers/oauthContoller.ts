@@ -63,6 +63,7 @@ export const handleAuthorize = async (req: Request, res: Response) => {
     if (!isUpdated)
       return res.status(500).json({ message: 'Internal server error' });
     // redirecting to client app with auth code and state as query params
+    //console.log(location)
     return res.status(302).redirect(location);
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
@@ -113,25 +114,6 @@ export const getClaims = async (
     return;
   }
   try {
-    const codeData = await prisma.code.findUnique({
-      where: {
-        code: code
-      },
-      select: {
-        codeChallenge: true
-      }
-    });
-    if (codeData?.codeChallenge.length) {
-      const isVerified = await verifyCodeChallenge(
-        code,
-        req.body.code_verifier
-      );
-      if (!isVerified) {
-        return res
-          .status(400)
-          .json({ message: 'code verification failed for code challenge.' });
-      }
-    }
     const authCode = await prisma.code.findUnique({
       where: {
         code: code
@@ -144,6 +126,44 @@ export const getClaims = async (
     });
 
     res.locals.code = authCode;
+    next();
+  } catch (error) {
+    next();
+  }
+};
+
+export const verifyPKCE = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  // getting cliams from code before revoke authorization code, for id_token
+  const { code } = req.body;
+  if (!code) {
+    next();
+    return;
+  }
+  try {
+    const codeData = await prisma.code.findUnique({
+      where: {
+        code: code
+      },
+      select: {
+        codeChallenge: true
+      }
+    });
+    if (codeData?.codeChallenge) {
+      if (!req.body.code_verifier) {
+        return res.status(400).json({ message: 'code_verifier is missing' });
+      }
+      const isVerified = await verifyCodeChallenge(
+        code,
+        req.body.code_verifier
+      );
+      if (!isVerified) {
+        return res.status(400).json({ message: 'Internal server error.' });
+      }
+    }
     next();
   } catch (error) {
     next();

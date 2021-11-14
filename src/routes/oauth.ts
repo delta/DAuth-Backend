@@ -7,7 +7,8 @@ import {
   getClaims,
   isClientAuthorized,
   getIdToken,
-  validateAuthorizeRequest
+  validateAuthorizeRequest,
+  verifyPKCE
 } from '../controllers/oauthContoller';
 import oauth from '../oauth/index';
 
@@ -43,6 +44,13 @@ router.post(
 
 // token route, should/will be a backchannel communication
 // code_verifier needed when code_challenge is present
-router.post('/token', getClaims, oauth.token(), getIdToken, handleToken);
+router.post(
+  '/token',
+  verifyPKCE,
+  getClaims,
+  oauth.token(),
+  getIdToken,
+  handleToken
+);
 
 export default router;
