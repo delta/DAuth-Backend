@@ -7,19 +7,23 @@ import {
   getClaims,
   isClientAuthorized,
   getIdToken,
-  validateAuthorizeRequest
+  validateAuthorizeRequest,
+  verifyPKCE
 } from '../controllers/oauthContoller';
 import oauth from '../oauth/index';
 
 const router: Router = express.Router();
 
-// client_id     |
-// redirect_uri  |
-// response_type |
-// grant_type    | -> query params
-// state         |
-// scope         |
-// nonce         |
+// client_id               |
+// redirect_uri            |
+// response_type           |
+// grant_type              | -> query params
+// state                   |
+// scope                   |
+// nonce                   |
+
+// code_challenge          | ->pkce
+// code_challenge_method   |
 router.get('/authorize', isAuthenticated, validateClient, isClientAuthorized);
 
 // authorize route
@@ -39,6 +43,14 @@ router.post(
 );
 
 // token route, should/will be a backchannel communication
-router.post('/token', getClaims, oauth.token(), getIdToken, handleToken);
+// code_verifier needed when code_challenge is present
+router.post(
+  '/token',
+  verifyPKCE,
+  getClaims,
+  oauth.token(),
+  getIdToken,
+  handleToken
+);
 
 export default router;

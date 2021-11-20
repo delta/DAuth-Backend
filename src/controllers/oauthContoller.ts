@@ -2,7 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 import { URL } from 'url';
 import prisma from '../config/prismaClient';
 import { sendNewAppMail } from '../utils/mail';
-import { isAuthorizedApp, saveStateAndNonce } from '../utils/oauth';
+import {
+  isAuthorizedApp,
+  saveStateAndNonce,
+  saveStateCodeChallengeAndNonce,
+  verifyCodeChallenge
+} from '../utils/oauth';
 import { generateIdToken } from '../utils/utils';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -54,15 +59,24 @@ export const handleAuthorize = async (req: Request, res: Response) => {
     // saving nonce and state with code
     // state will be send back with code and accesstoken response
     // nonce will be part of id token (jwt) claims
-    const isUpdated = await saveStateAndNonce(
-      code.authorizationCode,
-      req.body.state,
-      req.body.nonce
-    );
+    let isUpdated;
+    if (req.body.code_challenge) {
+      isUpdated = await saveStateCodeChallengeAndNonce(
+        code.authorizationCode,
+        req.body
+      ); // saving state, code_challenge and nonce
+    } else {
+      isUpdated = await saveStateAndNonce(
+        code.authorizationCode,
+        req.body.state,
+        req.body.nonce
+      ); // saving nonce and state with code
+    }
 
     if (!isUpdated)
       return res.status(500).json({ message: 'Internal server error' });
     // redirecting to client app with auth code and state as query params
+    //console.log(location)
     return res.status(302).redirect(location);
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
@@ -128,6 +142,46 @@ export const getClaims = async (
     next();
   } catch (error) {
     next();
+  }
+};
+
+export const verifyPKCE = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  // getting cliams from code before revoke authorization code, for id_token
+  const { code } = req.body;
+  if (!code) {
+    next();
+    return;
+  }
+  try {
+    const codeData = await prisma.code.findUnique({
+      where: {
+        code: code
+      },
+      select: {
+        codeChallenge: true
+      }
+    });
+    if (codeData?.codeChallenge) {
+      if (!req.body.code_verifier) {
+        return res.status(400).json({ message: 'Invalid code verifier.' });
+      }
+      const isVerified = await verifyCodeChallenge(
+        code,
+        req.body.code_verifier
+      );
+      if (!isVerified) {
+        return res
+          .status(404)
+          .json({ message: 'Code challenge verification failed.' });
+      }
+    }
+    next();
+  } catch (error) {
+    return res.status(400).json({ message: 'Internal server error.' });
   }
 };
 

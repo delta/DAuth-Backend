@@ -86,7 +86,6 @@ class ExpressOAuthServer {
     return (req: Request, res: Response, next: NextFunction) => {
       const request = new OAuth2Server.Request(req);
       const response = new OAuth2Server.Response(res);
-
       this.server
         .token(request, response, options)
         .then((token) => {

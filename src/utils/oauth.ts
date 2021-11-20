@@ -3,6 +3,7 @@ import { ResourceOwner } from '@prisma/client';
 import OAuth2Server from 'oauth2-server';
 import { URL } from 'url';
 import prisma from '../config/prismaClient';
+import crypto from 'crypto';
 
 export const getOAuth2Client = (client: {
   clientId: string;
@@ -61,6 +62,47 @@ export const buildUrl = (uri: string, searchparams: any) => {
   return myUrl;
 };
 
+// saves state, code challenge and nonce in db
+export const saveStateCodeChallengeAndNonce = async (
+  code: string,
+  data: any
+): Promise<boolean> => {
+  try {
+    const state = data.state;
+    const nonce = data.nonce;
+    const codeChallenge = data.code_challenge;
+    const codeChallengeMethod = data.code_challenge_method;
+    await prisma.code.update({
+      where: {
+        code: code
+      },
+      data: {
+        nonce: nonce,
+        state: state
+      }
+    });
+    if (codeChallenge) {
+      const codeId = await prisma.code.findUnique({
+        where: {
+          code: code
+        }
+      });
+      await prisma.codechallenge.create({
+        data: {
+          codeChallenge: codeChallenge as string,
+          codeChallengeMethod: codeChallengeMethod as string,
+          codeId: (codeId as any).id,
+          expireAt: new Date(Date.now() + 36000000)
+        }
+      });
+    }
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
 export const saveStateAndNonce = async (
   code: string,
   state: string,
@@ -97,7 +139,51 @@ export const isAuthorizedApp = async (
     });
     if (!app) return false;
     return true;
-  } catch (error) {
+  } catch (error: any) {
+    throw new Error(error);
+  }
+};
+
+// to verify the code challenge for PKCE based on code challenge methods(plain and S256)
+export const verifyCodeChallenge = async (
+  code: string,
+  codeVerifier: string
+): Promise<boolean> => {
+  try {
+    const codeData: any = await prisma.code.findUnique({
+      where: {
+        code: code
+      },
+      select: {
+        codeChallenge: true
+      }
+    });
+    if (!codeData) return false;
+    if (codeData.codeChallenge.codeChallengeMethod === 'plain') {
+      if (codeData.codeChallenge.codeChallenge == codeVerifier.toString()) {
+        await prisma.codechallenge.delete({
+          where: {
+            codeChallenge: codeData.codeChallenge.codeChallenge as string
+          }
+        });
+        return true;
+      }
+    } else if (codeData.codeChallenge.codeChallengeMethod === 'S256') {
+      const hashedCodeVerifier = await crypto
+        .createHash('sha256')
+        .update(codeVerifier)
+        .digest('hex');
+      if (codeData.codeChallenge.codeChallenge == hashedCodeVerifier) {
+        await prisma.codechallenge.delete({
+          where: {
+            codeChallenge: codeData.codeChallenge.codeChallenge as string
+          }
+        });
+        return true;
+      }
+    }
+    return false;
+  } catch (error: any) {
     throw new Error(error);
   }
 };
