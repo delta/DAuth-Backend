@@ -62,7 +62,8 @@ export const buildUrl = (uri: string, searchparams: any) => {
   return myUrl;
 };
 
-export const saveStateAndNonce = async (
+// saves state, code challenge and nonce in db
+export const saveStateCodeChallengeAndNonce = async (
   code: string,
   data: any
 ): Promise<boolean> => {
@@ -102,6 +103,27 @@ export const saveStateAndNonce = async (
   }
 };
 
+export const saveStateAndNonce = async (
+  code: string,
+  state: string,
+  nonce: string
+): Promise<boolean> => {
+  try {
+    await prisma.code.update({
+      where: {
+        code: code
+      },
+      data: {
+        nonce: nonce,
+        state: state
+      }
+    });
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
 export const isAuthorizedApp = async (
   clientId: number,
   userId: number
@@ -122,6 +144,7 @@ export const isAuthorizedApp = async (
   }
 };
 
+// to verify the code challenge for PKCE based on code challenge methods(plain and S256)
 export const verifyCodeChallenge = async (
   code: string,
   codeVerifier: string

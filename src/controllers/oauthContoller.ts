@@ -5,6 +5,7 @@ import { sendNewAppMail } from '../utils/mail';
 import {
   isAuthorizedApp,
   saveStateAndNonce,
+  saveStateCodeChallengeAndNonce,
   verifyCodeChallenge
 } from '../utils/oauth';
 import { generateIdToken } from '../utils/utils';
@@ -58,7 +59,19 @@ export const handleAuthorize = async (req: Request, res: Response) => {
     // saving nonce and state with code
     // state will be send back with code and accesstoken response
     // nonce will be part of id token (jwt) claims
-    const isUpdated = await saveStateAndNonce(code.authorizationCode, req.body);
+    let isUpdated;
+    if (req.body.code_challenge) {
+      isUpdated = await saveStateCodeChallengeAndNonce(
+        code.authorizationCode,
+        req.body
+      ); // saving state, code_challenge and nonce
+    } else {
+      isUpdated = await saveStateAndNonce(
+        code.authorizationCode,
+        req.body.state,
+        req.body.nonce
+      ); // saving nonce and state with code
+    }
 
     if (!isUpdated)
       return res.status(500).json({ message: 'Internal server error' });
@@ -154,19 +167,21 @@ export const verifyPKCE = async (
     });
     if (codeData?.codeChallenge) {
       if (!req.body.code_verifier) {
-        return res.status(400).json({ message: 'code_verifier is missing' });
+        return res.status(400).json({ message: 'Invalid code verifier.' });
       }
       const isVerified = await verifyCodeChallenge(
         code,
         req.body.code_verifier
       );
       if (!isVerified) {
-        return res.status(400).json({ message: 'Internal server error.' });
+        return res
+          .status(404)
+          .json({ message: 'Code challenge verification failed.' });
       }
     }
     next();
   } catch (error) {
-    next();
+    return res.status(400).json({ message: 'Internal server error.' });
   }
 };
 
