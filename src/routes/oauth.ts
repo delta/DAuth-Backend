@@ -48,7 +48,7 @@ router.post(
   '/token',
   verifyPKCE,
   getClaims,
-  oauth.token(),
+  oauth.tokenHandler(),
   getIdToken,
   handleToken
 );

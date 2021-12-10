@@ -3,7 +3,8 @@ import { ResourceOwner } from '@prisma/client';
 import OAuth2Server from 'oauth2-server';
 import { URL } from 'url';
 import prisma from '../config/prismaClient';
-import crypto from 'crypto';
+import crypto, { randomBytes } from 'crypto';
+import { Request } from 'express';
 
 export const getOAuth2Client = (client: {
   clientId: string;
@@ -185,4 +186,18 @@ export const verifyCodeChallenge = async (
   } catch (error: any) {
     throw new Error(error);
   }
+};
+
+// check if a token request contains `client-secret` to
+// differentiate between public clients(ex : android app) and private clients(the one can use client secret ex : web server)
+export const isPublicClientTokenReq = (req: Request): boolean => {
+  if (req.body.client_secret) return true;
+
+  return false;
+};
+
+// used to generate access token
+export const generateRandomToken = (): string => {
+  const buffer = randomBytes(256);
+  return crypto.createHash('sha1').update(buffer).digest('hex');
 };
