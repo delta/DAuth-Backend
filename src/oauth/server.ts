@@ -81,7 +81,7 @@ class ExpressOAuthServer extends OAuthError {
 
   // this will handle token request for private clients like web application
   // i.e the one that can store clinet secret with them
-  privateClientTokenHandler = (
+  private privateClientTokenHandler = (
     req: Request,
     res: Response,
     next: NextFunction
@@ -102,7 +102,7 @@ class ExpressOAuthServer extends OAuthError {
 
   // this will handle token request for public clients like native apps
   // i.e the one that can't store client secret with them
-  publicClientTokenHandler = async (
+  private publicClientTokenHandler = async (
     req: Request,
     res: Response,
     next: NextFunction

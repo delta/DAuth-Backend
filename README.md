@@ -1,8 +1,7 @@
 # Delta oauth2.0 service provider
 ## Prerequisites
- - node
+ - node 14.x.x
  - mysql
- - typescript
 
 ## Setup
 - install dependencies
@@ -23,10 +22,10 @@
 ## Authorization Code Flow
 
 ### For web apps
-![authorization code flow dance](https://github.com/siva2204/DAuth-Backend/blob/node-oauth2-int/public/images/flow-dm.png)
+![authorization code flow dance](https://github.com/delta/DAuth-Backend/blob/dev/public/images/flow.png)
 
 ### For android apps
-![authorization code flow with pkce](https://raw.githubusercontent.com/nishihere19/DAuth-Backend/pkce/public/images/flow-with-pkce.png)
+![authorization code flow with pkce](https://github.com/delta/DAuth-Backend/blob/dev/public/images/flow-with-pkce.png)
 
 ### Authorize endpoint
 

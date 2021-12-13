@@ -5,7 +5,7 @@ interface oauthError {
 }
 
 export class OAuthError {
-  invalidRequestError = (e: string): oauthError => {
+  protected invalidRequestError = (e: string): oauthError => {
     const error: oauthError = {
       code: 400,
       name: 'invalid_request',
@@ -15,7 +15,7 @@ export class OAuthError {
     return error;
   };
 
-  invalidClientError = (): oauthError => {
+  protected invalidClientError = (): oauthError => {
     const error: oauthError = {
       code: 400,
       name: 'invalid_client',
@@ -25,7 +25,7 @@ export class OAuthError {
     return error;
   };
 
-  unSupportedGrantError = (): oauthError => {
+  protected unSupportedGrantError = (): oauthError => {
     const error: oauthError = {
       code: 400,
       name: 'unsupported_grant_type',
@@ -35,7 +35,7 @@ export class OAuthError {
     return error;
   };
 
-  inValidGrantError = (e: string): oauthError => {
+  protected inValidGrantError = (e: string): oauthError => {
     const error: oauthError = {
       code: 400,
       name: 'unsupported_grant_type',
@@ -45,7 +45,7 @@ export class OAuthError {
     return error;
   };
 
-  internalServerError = (): oauthError => {
+  protected internalServerError = (): oauthError => {
     const error: oauthError = {
       code: 500,
       name: 'internal_server_error',
