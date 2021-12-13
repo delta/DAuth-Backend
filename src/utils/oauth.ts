@@ -191,9 +191,9 @@ export const verifyCodeChallenge = async (
 // check if a token request contains `client-secret` to
 // differentiate between public clients(ex : android app) and private clients(the one can use client secret ex : web server)
 export const isPublicClientTokenReq = (req: Request): boolean => {
-  if (req.body.client_secret) return true;
+  if (req.body.client_secret) return false;
 
-  return false;
+  return true;
 };
 
 // used to generate access token

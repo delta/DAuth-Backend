@@ -129,7 +129,7 @@ class ExpressOAuthServer extends OAuthError {
       // validation ends <---
 
       // only supported grant
-      if (grant_type != 'authorization_code')
+      if (grant_type !== 'authorization_code')
         throw this.unSupportedGrantError();
 
       // client secret will not sent in the request
@@ -189,7 +189,7 @@ class ExpressOAuthServer extends OAuthError {
         accessTokenExpiresAt: accessTokenLifeTime,
         client: authorizationCode.client,
         user: authorizationCode.user,
-        scope: authorizationCode.scopes
+        scope: authorizationCode.scope
       };
 
       // saving token in db with scopes
@@ -218,8 +218,10 @@ class ExpressOAuthServer extends OAuthError {
   ) => void | Response) => {
     return (req: Request, res: Response, next: NextFunction) => {
       if (!isPublicClientTokenReq(req)) {
+        console.log('private');
         this.privateClientTokenHandler(req, res, next);
       } else {
+        console.log('public');
         this.publicClientTokenHandler(req, res, next);
       }
     };

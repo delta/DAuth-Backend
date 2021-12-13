@@ -30,7 +30,7 @@ router.get('/authorize', isAuthenticated, validateClient, isClientAuthorized);
 // 'false' === req.query.allowed, for user who denied access to application
 router.post(
   '/authorize',
-  validateAuthorizeRequest,
+  // validateAuthorizeRequest,
   isAuthenticated,
   oauth.authorize({
     authenticateHandler: {

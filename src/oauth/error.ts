@@ -1,7 +1,7 @@
 interface oauthError {
   code: number;
   name: string;
-  error_description: string;
+  message: string;
 }
 
 export class OAuthError {
@@ -9,7 +9,7 @@ export class OAuthError {
     const error: oauthError = {
       code: 400,
       name: 'invalid_request',
-      error_description: e
+      message: e
     };
 
     return error;
@@ -19,7 +19,7 @@ export class OAuthError {
     const error: oauthError = {
       code: 400,
       name: 'invalid_client',
-      error_description: 'Invalid client: client is invalid'
+      message: 'Invalid client: client is invalid'
     };
 
     return error;
@@ -29,7 +29,7 @@ export class OAuthError {
     const error: oauthError = {
       code: 400,
       name: 'unsupported_grant_type',
-      error_description: 'Unsupported grant type: `grant_type` is invalid'
+      message: 'Unsupported grant type: `grant_type` is invalid'
     };
 
     return error;
@@ -39,7 +39,7 @@ export class OAuthError {
     const error: oauthError = {
       code: 400,
       name: 'unsupported_grant_type',
-      error_description: e
+      message: e
     };
 
     return error;
@@ -49,7 +49,7 @@ export class OAuthError {
     const error: oauthError = {
       code: 500,
       name: 'internal_server_error',
-      error_description: 'internal server error'
+      message: 'internal server error'
     };
 
     return error;
