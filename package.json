@@ -12,7 +12,7 @@
     "format": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "prepare": "husky install",
     "session:debug": "DEBUG=express-session npm run dev",
-    "migrate:db": "npx prisma migrate dev"
+    "migrate:db": "npx prisma generate && npx prisma migrate dev"
   },
   "repository": {
     "type": "git",
