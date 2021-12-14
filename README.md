@@ -24,7 +24,7 @@
 ### For web apps
 ![authorization code flow dance](https://github.com/delta/DAuth-Backend/blob/dev/public/images/flow.png)
 
-### For android apps
+### For native apps
 ![authorization code flow with pkce](https://github.com/delta/DAuth-Backend/blob/dev/public/images/flow-with-pkce.png)
 
 ### Authorize endpoint
@@ -37,7 +37,7 @@ Content-Type: application/x-www-form-urlencoded
 
 client_id=qwdsfgwrTHNHRMYUKTILY&redirect_uri=https%3A%2F%2Fstackoverflow.com%2F&response_type=code&grant_type=authorization_code&state=sdafsdghb&scope=email+openid+profile&nonce=bscsbascbadcsbasccabs
 ```
-#### For android apps
+#### For native apps
 ```HTTP
 POST /oauth/authorize HTTP/1.1
 Host: localhost:3001
@@ -57,14 +57,14 @@ Content-Type: application/x-www-form-urlencoded
 client_id=qwdsfgwrTHNHRMYUKTILY&client_secret=csadvfbgnrwmywtkulifjrknjvnjrnlrnjvlnfvnflv&grant_type=authorization_code&code=f65dbf63a96650e689ef9f800a63ed67177ebe45&redirect_uri=https%3A%2F%2Fstackoverflow.com%2F
 ```
 
-#### For android apps
+#### For native apps
 
 ```HTTP
 POST /oauth/token HTTP/1.1
 Host: localhost:3001
 Content-Type: application/x-www-form-urlencoded
 
-client_id=qwdsfgwrTHNHRMYUKTILY&client_secret=csadvfbgnrwmywtkulifjrknjvnjrnlrnjvlnfvnflv&grant_type=authorization_code&code=f65dbf63a96650e689ef9f800a63ed67177ebe45&redirect_uri=https%3A%2F%2Fstackoverflow.com%2F&code_verifier=asjbkakbcmbkcsabk
+client_id=qwdsfgwrTHNHRMYUKTILY&grant_type=authorization_code&code=f65dbf63a96650e689ef9f800a63ed67177ebe45&redirect_uri=https%3A%2F%2Fstackoverflow.com%2F&code_verifier=asjbkakbcmbkcsabk
 ```
 
 ### key endpoint
