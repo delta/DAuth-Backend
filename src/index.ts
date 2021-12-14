@@ -62,6 +62,7 @@ app.use('/client', clientRouter);
 //Dashboard Routes
 app.use('/user', dashboardRouter);
 
+// Resource Routes
 app.use('/resources', resourcesRouter);
 
 app.get('/', async (req: Request, res: Response): Promise<Response> => {
@@ -72,6 +73,6 @@ try {
   app.listen(port, (): void => {
     console.log(`[server]: up and running on http://localhost:${port}`);
   });
-} catch (error) {
+} catch (error: any) {
   console.error(`Error occured: ${error.message}`);
 }

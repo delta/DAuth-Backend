@@ -1,6 +1,6 @@
 #!/bin/sh
 
 # migration
-prisma migrate dev
+npm run migrate:db
 # build & run app
 npm start
