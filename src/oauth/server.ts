@@ -218,10 +218,8 @@ class ExpressOAuthServer extends OAuthError {
   ) => void | Response) => {
     return (req: Request, res: Response, next: NextFunction) => {
       if (!isPublicClientTokenReq(req)) {
-        console.log('private');
         this.privateClientTokenHandler(req, res, next);
       } else {
-        console.log('public');
         this.publicClientTokenHandler(req, res, next);
       }
     };

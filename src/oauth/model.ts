@@ -75,7 +75,6 @@ const saveToken = async (
     });
     return getOauth2accessToken({ token, client, user });
   } catch (error) {
-    console.log(error);
     return null;
   }
 };
