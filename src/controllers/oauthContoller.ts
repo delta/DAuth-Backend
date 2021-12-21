@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { check, oneOf, validationResult } from 'express-validator';
 import { URL } from 'url';
 import prisma from '../config/prismaClient';
 import { sendNewAppMail } from '../utils/mail';
@@ -11,6 +12,23 @@ import {
 import { generateIdToken } from '../utils/utils';
 
 const isProd = process.env.NODE_ENV === 'production';
+
+export const validateAuthorizeRequestParams = [
+  check('state').not().isEmpty().withMessage('State is required'),
+  check('nonce').not().isEmpty().withMessage('Nonce is required'),
+  check('code_challenge').custom((value,{req}) => {
+    if (value) {
+      if(!req.body.code_challenge_method) {
+        throw new Error('Code challenge method is required');
+      }
+      else if(!['S256', 'plain'].includes(req.body.code_challenge_method)) {
+        throw new Error('Code challenge method must be either S256 or plain');
+      }
+      else return true;
+    }
+    else return true;
+  })
+];
 
 export const validateAuthorizeRequest = async (
   req: Request,
@@ -29,6 +47,10 @@ export const validateAuthorizeRequest = async (
 
 // authorization handler, redirects to client redirecturi with code and state query params
 export const handleAuthorize = async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: errors.array() });
+  }
   const { code } = res.locals.code;
   const user: any = req.user;
   // redirect uri

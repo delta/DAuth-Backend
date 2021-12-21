@@ -8,7 +8,8 @@ import {
   isClientAuthorized,
   getIdToken,
   validateAuthorizeRequest,
-  verifyPKCE
+  verifyPKCE,
+  validateAuthorizeRequestParams
 } from '../controllers/oauthContoller';
 import oauth from '../oauth/index';
 
@@ -30,6 +31,7 @@ router.get('/authorize', isAuthenticated, validateClient, isClientAuthorized);
 // 'false' === req.query.allowed, for user who denied access to application
 router.post(
   '/authorize',
+  validateAuthorizeRequestParams,
   validateAuthorizeRequest,
   isAuthenticated,
   oauth.authorize({
