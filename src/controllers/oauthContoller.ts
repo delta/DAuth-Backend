@@ -16,17 +16,14 @@ const isProd = process.env.NODE_ENV === 'production';
 export const validateAuthorizeRequestParams = [
   check('state').not().isEmpty().withMessage('State is required'),
   check('nonce').not().isEmpty().withMessage('Nonce is required'),
-  check('code_challenge').custom((value,{req}) => {
+  check('code_challenge').custom((value, { req }) => {
     if (value) {
-      if(!req.body.code_challenge_method) {
+      if (!req.body.code_challenge_method) {
         throw new Error('Code challenge method is required');
-      }
-      else if(!['S256', 'plain'].includes(req.body.code_challenge_method)) {
+      } else if (!['S256', 'plain'].includes(req.body.code_challenge_method)) {
         throw new Error('Code challenge method must be either S256 or plain');
-      }
-      else return true;
-    }
-    else return true;
+      } else return true;
+    } else return true;
   })
 ];
 
