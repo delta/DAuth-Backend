@@ -154,7 +154,7 @@ export const deleteClient = async (
           clientId: client.id
         }
       });
-      const deleteTokens = prisma.authorisedApps.deleteMany({
+      const deleteTokens = prisma.token.deleteMany({
         where: {
           clientId: client.id
         }
