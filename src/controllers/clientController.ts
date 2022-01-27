@@ -133,48 +133,24 @@ export const deleteClient = async (
 ): Promise<unknown> => {
   try {
     const { clientId } = req.body;
+
     const client = await prisma.client.findUnique({
       where: {
-        clientId: clientId as string
+        clientId: clientId
       },
       select: {
         id: true
       }
     });
 
-    if (client) {
-      //delete token, authorised apps, codes before deleting client
-      const deleteCodes = prisma.code.deleteMany({
-        where: {
-          clientId: client.id
-        }
-      });
-      const deleteApps = prisma.authorisedApps.deleteMany({
-        where: {
-          clientId: client.id
-        }
-      });
-      const deleteTokens = prisma.authorisedApps.deleteMany({
-        where: {
-          clientId: client.id
-        }
-      });
-      const deleteClient = prisma.client.delete({
-        where: {
-          clientId: clientId
-        }
-      });
+    if (!client) return res.status(404).json({ message: 'client not found' });
+    // prisma doing some random reference checking while deleting client
+    // even though CASCADE DELETE constraint is there
+    // so went with raw sql
+    // deleting client will delete all the code, token, code challenges and user authorized apps
+    await prisma.$executeRaw`Delete FROM Client Where id = ${client.id};`;
 
-      //either all are deleted together or the action fails.
-      await prisma.$transaction([
-        deleteCodes,
-        deleteTokens,
-        deleteApps,
-        deleteClient
-      ]);
-
-      return res.status(200).json({ message: 'Client deleted successfully.' });
-    }
+    return res.status(200).json({ message: 'Client deleted successfully.' });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -257,10 +233,12 @@ export const isPermitted = async (
     });
 
     if (!client) res.status(400).json({ message: 'Client not found.' });
+
     if (client && client.userId != user.id)
       return res.status(404).json({
         message: 'You do not have the required permissions.'
       });
+
     next();
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
