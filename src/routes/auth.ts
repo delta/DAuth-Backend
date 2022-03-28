@@ -16,7 +16,8 @@ import {
   verifyEmail,
   checkUserExsits,
   resetPassword,
-  updateProfile
+  updateProfile,
+  getBatches
 } from '../controllers/authContoller';
 import {
   sendVerifyMail,
@@ -42,6 +43,9 @@ router.post(
   isAuthenticated,
   updateProfile
 );
+
+// get batches route
+router.get('/batches', getBatches);
 
 router.use(isNotAuthenticated);
 // register session start route

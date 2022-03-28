@@ -248,11 +248,20 @@ export const register = async (
     }
   });
 
-  const { name, password, phoneNumber, gender } = req.body;
+  const { name, password, phoneNumber, gender, batch } = req.body;
   try {
     // generate salt to hash password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
+
+    //check if batch exists in db
+    const userBatch = await prisma.batch.findUnique({
+      where: {
+        batch: batch.toString()
+      }
+    });
+    if (!userBatch)
+      return res.status(406).json({ message: 'The batch is invalid.' });
 
     // create user
     await prisma.resourceOwner.create({
@@ -261,11 +270,13 @@ export const register = async (
         name: name,
         password: hashPassword,
         phoneNumber: phoneNumber,
-        gender: gender
+        gender: gender,
+        batch: batch
       }
     });
     return res.status(200).json({ message: 'Registration successful' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -424,10 +435,10 @@ export const updateProfile = async (
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { name, phoneNumber, gender } = req.body;
+  const { name, phoneNumber, gender, batch } = req.body;
   const user: any = req.user;
   try {
-    // create user
+    //update user
     await prisma.resourceOwner.update({
       where: {
         id: user.id
@@ -435,12 +446,29 @@ export const updateProfile = async (
       data: {
         name: name,
         phoneNumber: phoneNumber,
-        gender: gender
+        gender: gender,
+        batch: batch
       }
     });
     return res
       .status(200)
       .json({ message: 'Successfully updated the details!' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getBatches = async (
+  req: Request,
+  res: Response
+): Promise<unknown> => {
+  try {
+    const batches = await prisma.batch.findMany({
+      select: {
+        batch: true
+      }
+    });
+    return res.status(200).json(batches);
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }

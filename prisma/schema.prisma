@@ -35,6 +35,7 @@ model ResourceOwner {
   Code           Code[]
   authorizedApps AuthorisedApps[]
   Token          Token[]
+  batch          String           @default("NULL")
 }
 
 model Client {
@@ -104,4 +105,9 @@ model Codechallenge {
   codeId                    Int
   createdAt                 DateTime      @default(now())
   expireAt                  DateTime
+}
+
+model Batch{
+  id          Int           @id @default(autoincrement())
+  batch       String        @unique
 }
