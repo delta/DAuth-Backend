@@ -258,7 +258,7 @@ export const register = async (
     //check if batch is valid
     const allBatches = await getAllBatches();
 
-    if (!(allBatches.includes(batch.toString())))
+    if (!allBatches.includes(batch.toString()))
       return res.status(406).json({ message: 'The batch is invalid.' });
 
     // create user
@@ -436,11 +436,10 @@ export const updateProfile = async (
   const { name, phoneNumber, gender, batch } = req.body;
   const user: any = req.user;
   try {
-
     //check if batch is valid
     const allBatches = await getAllBatches();
 
-    if (!(allBatches.includes(batch.toString())))
+    if (!allBatches.includes(batch.toString()))
       return res.status(406).json({ message: 'The batch is invalid.' });
 
     //update user
