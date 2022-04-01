@@ -9,7 +9,8 @@ import {
   removeWhiteSpaces,
   validatePhoneNumber,
   validateGender,
-  generateForgotPasswordToken
+  generateForgotPasswordToken,
+  getAllBatches
 } from '../utils/utils';
 import passport from 'passport';
 import { ResourceOwner } from '.prisma/client';
@@ -254,13 +255,10 @@ export const register = async (
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
 
-    //check if batch exists in db
-    const userBatch = await prisma.batch.findUnique({
-      where: {
-        batch: batch.toString()
-      }
-    });
-    if (!userBatch)
+    //check if batch is valid
+    const allBatches = await getAllBatches();
+
+    if (!(allBatches.includes(batch.toString())))
       return res.status(406).json({ message: 'The batch is invalid.' });
 
     // create user
@@ -271,12 +269,12 @@ export const register = async (
         password: hashPassword,
         phoneNumber: phoneNumber,
         gender: gender,
-        batch: batch
+        batch: batch.toString()
       }
     });
     return res.status(200).json({ message: 'Registration successful' });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -438,6 +436,13 @@ export const updateProfile = async (
   const { name, phoneNumber, gender, batch } = req.body;
   const user: any = req.user;
   try {
+
+    //check if batch is valid
+    const allBatches = await getAllBatches();
+
+    if (!(allBatches.includes(batch.toString())))
+      return res.status(406).json({ message: 'The batch is invalid.' });
+
     //update user
     await prisma.resourceOwner.update({
       where: {
@@ -447,7 +452,7 @@ export const updateProfile = async (
         name: name,
         phoneNumber: phoneNumber,
         gender: gender,
-        batch: batch
+        batch: batch.toString()
       }
     });
     return res
@@ -463,11 +468,7 @@ export const getBatches = async (
   res: Response
 ): Promise<unknown> => {
   try {
-    const batches = await prisma.batch.findMany({
-      select: {
-        batch: true
-      }
-    });
+    const batches = await getAllBatches();
     return res.status(200).json(batches);
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });

@@ -106,8 +106,3 @@ model Codechallenge {
   createdAt                 DateTime      @default(now())
   expireAt                  DateTime
 }
-
-model Batch{
-  id          Int           @id @default(autoincrement())
-  batch       String        @unique
-}

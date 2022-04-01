@@ -28,15 +28,6 @@ ALTER TABLE `Token` DROP FOREIGN KEY `Token_ibfk_1`;
 -- AlterTable
 ALTER TABLE `ResourceOwner` ADD COLUMN `batch` VARCHAR(191) NOT NULL DEFAULT 'NULL';
 
--- CreateTable
-CREATE TABLE `Batch` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `batch` VARCHAR(191) NOT NULL,
-
-    UNIQUE INDEX `Batch_batch_key`(`batch`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 -- AddForeignKey
 ALTER TABLE `ResourceOwner` ADD CONSTRAINT `ResourceOwner_emailId_fkey` FOREIGN KEY (`emailId`) REFERENCES `Email`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
