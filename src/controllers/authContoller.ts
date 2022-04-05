@@ -274,7 +274,6 @@ export const register = async (
     });
     return res.status(200).json({ message: 'Registration successful' });
   } catch (error) {
-    // console.log(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
