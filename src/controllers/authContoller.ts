@@ -9,9 +9,9 @@ import {
   removeWhiteSpaces,
   validatePhoneNumber,
   validateGender,
-  generateForgotPasswordToken,
-  getAllBatches
+  generateForgotPasswordToken
 } from '../utils/utils';
+import { batches } from '../utils/constants';
 import passport from 'passport';
 import { ResourceOwner } from '.prisma/client';
 
@@ -256,7 +256,7 @@ export const register = async (
     const hashPassword = await bcrypt.hash(password, salt);
 
     //check if batch is valid
-    const allBatches = await getAllBatches();
+    const allBatches = batches;
 
     if (!allBatches.includes(batch.toString()))
       return res.status(406).json({ message: 'The batch is invalid.' });
@@ -436,7 +436,7 @@ export const updateProfile = async (
   const user: any = req.user;
   try {
     //check if batch is valid
-    const allBatches = await getAllBatches();
+    const allBatches = batches;
 
     if (!allBatches.includes(batch.toString()))
       return res.status(406).json({ message: 'The batch is invalid.' });
@@ -466,7 +466,6 @@ export const getBatches = async (
   res: Response
 ): Promise<unknown> => {
   try {
-    const batches = await getAllBatches();
     return res.status(200).json(batches);
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
