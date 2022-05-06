@@ -35,6 +35,7 @@ model ResourceOwner {
   Code           Code[]
   authorizedApps AuthorisedApps[]
   Token          Token[]
+  batch          String?
 }
 
 model Client {

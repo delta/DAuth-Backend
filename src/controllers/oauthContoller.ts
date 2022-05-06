@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { URL } from 'url';
+import { url } from 'inspector';
+import { URL, URLSearchParams } from 'url';
 import prisma from '../config/prismaClient';
 import { sendNewAppMail } from '../utils/mail';
 import {
@@ -24,6 +25,24 @@ export const validateAuthorizeRequest = async (
       return res.status(400).json({ message: 'Bad request' });
     }
   }
+
+  // check if user profile data is updated, if not redirect the user
+  // to update-profile page and bring them back here to continue authorizing the client
+  const user: any = req.user;
+  if (user.batch === null) {
+    const redirectParams = new URLSearchParams();
+    redirectParams.set('client_id', req.body.client_id);
+    redirectParams.set('redirect_uri', req.body.redirect_uri);
+    redirectParams.set('response_type', 'code');
+    redirectParams.set('grant_type', req.body.grant_type);
+    redirectParams.set('state', req.body.state);
+    redirectParams.set('scope', req.body.scope);
+    redirectParams.set('nonce', req.body.nonce);
+
+    res.redirect(`${process.env.FRONTEND_URL}/editProfile?${redirectParams}`);
+    return;
+  }
+
   next();
 };
 
@@ -75,8 +94,8 @@ export const handleAuthorize = async (req: Request, res: Response) => {
 
     if (!isUpdated)
       return res.status(500).json({ message: 'Internal server error' });
+
     // redirecting to client app with auth code and state as query params
-    //console.log(location)
     return res.status(302).redirect(location);
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });

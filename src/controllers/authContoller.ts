@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { check, validationResult } from 'express-validator';
-import bcrypt, { hash } from 'bcrypt';
+import bcrypt from 'bcrypt';
 import prisma from '../config/prismaClient';
 import { JWT } from 'jose';
 import {
@@ -11,6 +11,7 @@ import {
   validateGender,
   generateForgotPasswordToken
 } from '../utils/utils';
+import { batches } from '../utils/constants';
 import passport from 'passport';
 import { ResourceOwner } from '.prisma/client';
 
@@ -248,7 +249,12 @@ export const register = async (
     }
   });
 
-  const { name, password, phoneNumber, gender } = req.body;
+  const { name, password, phoneNumber, gender, batch } = req.body;
+
+  //check if batch is valid
+  if (!batches.includes(batch))
+    return res.status(400).json({ message: 'The batch is invalid' });
+
   try {
     // generate salt to hash password
     const salt = await bcrypt.genSalt(10);
@@ -261,7 +267,8 @@ export const register = async (
         name: name,
         password: hashPassword,
         phoneNumber: phoneNumber,
-        gender: gender
+        gender: gender,
+        batch: batch
       }
     });
     return res.status(200).json({ message: 'Registration successful' });
@@ -424,10 +431,17 @@ export const updateProfile = async (
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { name, phoneNumber, gender } = req.body;
+  const { name, phoneNumber, gender, batch } = req.body;
+
+  if (!batches.includes(batch))
+    return res.status(400).json({ message: 'The batch is invalid.' });
+
   const user: any = req.user;
+
   try {
-    // create user
+    //check if batch is valid
+
+    //update user
     await prisma.resourceOwner.update({
       where: {
         id: user.id
@@ -435,12 +449,24 @@ export const updateProfile = async (
       data: {
         name: name,
         phoneNumber: phoneNumber,
-        gender: gender
+        gender: gender,
+        batch: batch
       }
     });
     return res
       .status(200)
       .json({ message: 'Successfully updated the details!' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getBatches = async (
+  req: Request,
+  res: Response
+): Promise<unknown> => {
+  try {
+    return res.status(200).json(batches);
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }

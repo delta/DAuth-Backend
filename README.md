@@ -22,10 +22,10 @@
 ## Authorization Code Flow
 
 ### For web apps
-![authorization code flow dance](https://github.com/delta/DAuth-Backend/blob/dev/public/images/flow.png)
+![authorization code flow dance](https://github.com/delta/DAuth-Backend/blob/main/public/images/flow.png)
 
 ### For native apps
-![authorization code flow with pkce](https://github.com/delta/DAuth-Backend/blob/dev/public/images/flow-with-pkce.png)
+![authorization code flow with pkce](https://github.com/delta/DAuth-Backend/blob/main/public/images/flow-with-pkce.png)
 
 ### Authorize endpoint
 

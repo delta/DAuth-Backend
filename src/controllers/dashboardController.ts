@@ -15,6 +15,7 @@ export const userInfo = async (
       select: {
         name: true,
         phoneNumber: true,
+        batch: true,
         gender: true,
         email: {
           select: {
