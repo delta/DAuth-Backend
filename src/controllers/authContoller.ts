@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { check, validationResult } from 'express-validator';
-import bcrypt, { hash } from 'bcrypt';
+import bcrypt from 'bcrypt';
 import prisma from '../config/prismaClient';
 import { JWT } from 'jose';
 import {
@@ -250,16 +250,15 @@ export const register = async (
   });
 
   const { name, password, phoneNumber, gender, batch } = req.body;
+
+  //check if batch is valid
+  if (!batches.includes(batch.toString()))
+    return res.status(400).json({ message: 'The batch is invalid' });
+
   try {
     // generate salt to hash password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
-
-    //check if batch is valid
-    const allBatches = batches;
-
-    if (!allBatches.includes(batch.toString()))
-      return res.status(406).json({ message: 'The batch is invalid.' });
 
     // create user
     await prisma.resourceOwner.create({
@@ -433,13 +432,14 @@ export const updateProfile = async (
   }
 
   const { name, phoneNumber, gender, batch } = req.body;
+
+  if (!batches.includes(batch.toString()))
+    return res.status(400).json({ message: 'The batch is invalid.' });
+
   const user: any = req.user;
+
   try {
     //check if batch is valid
-    const allBatches = batches;
-
-    if (!allBatches.includes(batch.toString()))
-      return res.status(406).json({ message: 'The batch is invalid.' });
 
     //update user
     await prisma.resourceOwner.update({

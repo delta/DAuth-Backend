@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { url } from 'inspector';
 import { URL } from 'url';
 import prisma from '../config/prismaClient';
 import { sendNewAppMail } from '../utils/mail';
@@ -24,6 +25,14 @@ export const validateAuthorizeRequest = async (
       return res.status(400).json({ message: 'Bad request' });
     }
   }
+
+  // check if user profile data is updated, if not redirect the user
+  // to update-profile page and bring them back here to continue authorizing the client
+  const user: any = req.user;
+  if (user.batch === null) {
+    res.redirect(`${process.env.FRONTEND_URL}/editProfile?redirectback=${url}`);
+  }
+
   next();
 };
 
