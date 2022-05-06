@@ -252,7 +252,7 @@ export const register = async (
   const { name, password, phoneNumber, gender, batch } = req.body;
 
   //check if batch is valid
-  if (!batches.includes(batch.toString()))
+  if (!batches.includes(batch))
     return res.status(400).json({ message: 'The batch is invalid' });
 
   try {
@@ -268,7 +268,7 @@ export const register = async (
         password: hashPassword,
         phoneNumber: phoneNumber,
         gender: gender,
-        batch: batch.toString()
+        batch: batch
       }
     });
     return res.status(200).json({ message: 'Registration successful' });
@@ -433,7 +433,7 @@ export const updateProfile = async (
 
   const { name, phoneNumber, gender, batch } = req.body;
 
-  if (!batches.includes(batch.toString()))
+  if (!batches.includes(batch))
     return res.status(400).json({ message: 'The batch is invalid.' });
 
   const user: any = req.user;
@@ -450,7 +450,7 @@ export const updateProfile = async (
         name: name,
         phoneNumber: phoneNumber,
         gender: gender,
-        batch: batch.toString()
+        batch: batch
       }
     });
     return res
