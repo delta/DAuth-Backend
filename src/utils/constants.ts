@@ -21,5 +21,6 @@ export const batches = [
   'MBA First Year',
   'MBA Second Year',
   'MA First Year',
-  'MA Second Year'
+  'MA Second Year',
+  'Faculty'
 ];
