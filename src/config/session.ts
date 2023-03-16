@@ -12,7 +12,8 @@ export const initSession = (app: express.Application): void => {
     //Configure redis client
     const redisClient = redis.createClient({
       host: process.env.REDIS_HOST as string,
-      port: parseInt(process.env.REDIS_PORT as string)
+      port: parseInt(process.env.REDIS_PORT as string),
+      password: process.env.REDIS_PASS as string
     });
 
     redisClient.on('error', (err) => {
