@@ -1,5 +1,4 @@
-import { Z_UNKNOWN } from 'zlib';
-import transporter from '../config/nodeMailer';
+import mail from '../config/mailer';
 const isProd = process.env.NODE_ENV === 'production';
 
 export const getMailContent = (
@@ -121,13 +120,16 @@ export const sendMail = (
   mailContent: string
 ): Promise<unknown> => {
   const data = {
-    from: 'Delta Force <no-reply@delta.nitt.edu>',
+    from: 'no-reply@pragyan.org',
     to: email,
     subject: subject,
     html: mailContent
   };
   if (isProd) {
-    return transporter.sendMail(data);
+    return mail.send(data).then((response) => {
+        console.log(response[0].statusCode)
+        console.log(response[0].headers)
+      }).catch((error) => console.log(error))
   }
   console.log(mailContent);
   return Promise.resolve(null);

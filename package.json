@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@prisma/client": "^2.26.0",
+    "@sendgrid/mail": "^7.7.0",
     "@types/express-session": "^1.17.3",
     "bcrypt": "^5.0.1",
     "connect-redis": "^6.0.0",
