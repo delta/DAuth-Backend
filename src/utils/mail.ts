@@ -126,10 +126,13 @@ export const sendMail = (
     html: mailContent
   };
   if (isProd) {
-    return mail.send(data).then((response) => {
-        console.log(response[0].statusCode)
-        console.log(response[0].headers)
-      }).catch((error) => console.log(error))
+    return mail
+      .send(data)
+      .then((response) => {
+        console.log(response[0].statusCode);
+        console.log(response[0].headers);
+      })
+      .catch((error) => console.log(error));
   }
   console.log(mailContent);
   return Promise.resolve(null);
