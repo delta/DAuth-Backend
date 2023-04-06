@@ -120,7 +120,7 @@ export const sendMail = (
   mailContent: string
 ): Promise<unknown> => {
   const data = {
-    from: 'no-reply@pragyan.org',
+    from: 'no-reply@auth.delta-force.club',
     to: email,
     subject: subject,
     html: mailContent
